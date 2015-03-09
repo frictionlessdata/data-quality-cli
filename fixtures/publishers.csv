@@ -1,0 +1,16 @@
+id,parent_id,name,description,url,jurisdiction_code,email,address,contact,score,source_count
+xx_dept1,,Department 1,,http://www.example.com/dept1,XX,dept1-admin@example.com,,Dept1 Admin,8,2
+xx_dept2,,Department 2,,http://www.example.com/dept2,XX,dept2-admin@example.com,,Dept2 Admin,8,2
+xx_dept3,,Department 3,,http://www.example.com/dept3,XX,dept3-admin@example.com,,Dept3 Admin,8,2
+xx_dept4,,Department 4,,http://www.example.com/dept4,XX,dept4-admin@example.com,,Dept4 Admin,8,2
+xx_dept5,,Department 5,,http://www.example.com/dept5,XX,dept5-admin@example.com,,Dept5 Admin,8,2
+xx_dept6,,Department 6,,http://www.example.com/dept6,XX,dept6-admin@example.com,,Dept6 Admin,8,1
+xx_dept7,,Department 7,,http://www.example.com/dept7,XX,dept7-admin@example.com,,Dept7 Admin,8,1
+xx_dept8,,Department 8,,http://www.example.com/dept8,XX,dept8-admin@example.com,,Dept8 Admin,8,1
+xx_dept9,,Department 9,,http://www.example.com/dept9,XX,dept9-admin@example.com,,Dept9 Admin,8,1
+xx_dept10,,Department 10,,http://www.example.com/dept10,XX,dept10-admin@example.com,,Dept10 Admin,8,1
+xx_dept11,xx_dept1,Department 11,,http://www.example.com/dept11,XX,dept-1-admin@example.com,,Dept11 Admin,8,1
+xx_dept12,xx_dept2,Department 12,,http://www.example.com/dept12,XX,dept-1-admin@example.com,,Dept12 Admin,8,1
+xx_dept13,xx_dept3,Department 13,,http://www.example.com/dept13,XX,dept-1-admin@example.com,,Dept13 Admin,8,1
+xx_dept14,xx_dept4,Department 14,,http://www.example.com/dept14,XX,dept-1-admin@example.com,,Dept14 Admin,8,1
+xx_dept15,xx_dept5,Department 15,,http://www.example.com/dept15,XX,dept-1-admin@example.com,,Dept15 Admin,8,1

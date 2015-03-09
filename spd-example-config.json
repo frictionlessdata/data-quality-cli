@@ -1,5 +1,5 @@
 {
-    "data_dir": "/code/projects/spd-example",
+    "data_dir": "/Users/paulwalsh/code/projects/spd-example",
     "result_file": "results.csv",
     "run_file": "runs.csv",
     "source_file": "sources.csv",
