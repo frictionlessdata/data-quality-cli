@@ -10,13 +10,7 @@ import io
 import json
 import click
 from goodtables import pipeline
-from . import tasks
-
-
-
-CLI_DIR = os.path.abspath(os.path.dirname(__file__))
-REPO_DIR = os.path.abspath(os.path.dirname(os.path.dirname(CLI_DIR)))
-sys.path.insert(1, REPO_DIR)
+from spd_admin import tasks
 
 
 @click.group()
@@ -36,7 +30,7 @@ def run(config_filepath, deploy):
 
     source_filepath = os.path.join(config['data_dir'], config['source_file'])
     aggregator = tasks.Aggregator(config)
-    batch_options = {'pipeline_post_process_handler': aggregator.run,
+    batch_options = {'pipeline_post_task': aggregator.run,
                      'data_key': 'url'}
 
     if deploy:
@@ -51,7 +45,7 @@ def run(config_filepath, deploy):
         def batch_handler(*args):
             aggregator.write_run()
 
-    batch_options['batch_post_process_handler'] = batch_handler
+    batch_options['post_task'] = batch_handler
     batch = pipeline.Batch(source_filepath, **batch_options)
     batch.run()
 

@@ -13,6 +13,7 @@ import datetime
 import subprocess
 import contextlib
 import pytz
+from . import compat
 
 
 @contextlib.contextmanager
@@ -56,17 +57,20 @@ class Aggregator(Task):
         """Run on a Pipeline instance."""
 
         with io.open(self.result_file, mode='a+t', encoding='utf-8') as f:
+
             source = self.get_source(pipeline.data.data_source)
             result_id = uuid.uuid4().hex
             period_id = source['period_id']
-            score = self.get_pipeline_score(pipeline)
-            data = ''
-            schema = ''
-            summary = ''
+            score = compat.str(self.get_pipeline_score(pipeline))
+            data = pipeline.data.data_source
+            schema = '' # pipeline.pipeline[1].schema_source
+            summary = '' # TODO: how/what should a summary be?
+            report = self.get_pipeline_report_url(pipeline)
+
             result_set = ','.join([result_id, source['id'], source['publisher_id'],
-                                   source['period_id'], str(score), data, schema,
-                                   summary, self.run_id, self.timestamp,
-                                   self.get_pipeline_report_url(pipeline)])
+                                   source['period_id'], score, data, schema,
+                                   summary, self.run_id, self.timestamp, report])
+
             f.write('{0}\n'.format(result_set))
 
     def get_lookup(self):
