@@ -9,7 +9,7 @@ install:
   - pip install coveralls
 
 script:
-  - py.test --cov spd_admin --cov-config .coveragerc --cov-report term-missing
+  - PYTHONPATH=. py.test --cov spd_admin --cov-config .coveragerc --cov-report term-missing
 
 after_success:
   - coveralls

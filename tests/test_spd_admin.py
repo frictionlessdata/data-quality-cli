@@ -10,13 +10,6 @@ import unittest
 import subprocess
 
 
-#TEST_DIR = os.path.abspath(os.path.dirname(__file__))
-#REPO_DIR = os.path.abspath(os.path.dirname(TEST_DIR))
-#sys.path.insert(1, REPO_DIR)
-
-#import pytest;pytest.set_trace()
-
-
 class TestSPDAdmin(unittest.TestCase):
 
     def test_start(self):
