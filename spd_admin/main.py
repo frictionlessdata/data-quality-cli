@@ -28,6 +28,10 @@ def run(config_filepath, deploy):
     with io.open(config_filepath, mode='rt', encoding='utf-8') as f:
         config = json.loads(f.read())
 
+    if not os.path.isabs(config['data_dir']):
+        config['data_dir'] = os.path.join(os.path.dirname(config_filepath),
+                                          config['data_dir'])
+ 
     source_filepath = os.path.join(config['data_dir'], config['source_file'])
     aggregator = tasks.Aggregator(config)
     batch_options = {'pipeline_post_task': aggregator.run,

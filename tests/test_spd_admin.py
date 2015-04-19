@@ -13,6 +13,6 @@ import subprocess
 class TestSPDAdmin(unittest.TestCase):
 
     def test_start(self):
-
-        c = ['python', os.path.join('spd_admin', 'main.py'),'run', 'test-config.json']
+        config_path = os.path.join('fixtures', 'spd-admin.json')
+        c = ['python', os.path.join('spd_admin', 'main.py'), 'run', config_path]
         result = subprocess.check_output(c)
