@@ -15,7 +15,7 @@ is_py3 = (_ver[0] == 3)
 
 dependencies = [
     'Click>=3.3',
-    'goodtables>=0.3.6',
+    'goodtables>=0.5.2',
     'pytz'
 ]
 
