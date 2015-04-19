@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/okfn/spd-admin.svg)](https://travis-ci.org/okfn/spd-admin)
+[![Coverage Status](https://coveralls.io/repos/okfn/spd-admin/badge.svg)](https://coveralls.io/r/okfn/spd-admin)
+
 # spd-admin
 
 Command line administration for Spend Publishing Dashboards.
