@@ -85,9 +85,9 @@ class Aggregator(Task):
 
         return lookup
 
-    def get_source(self, url):
+    def get_source(self, data):
 
-        matches = [match for match in self.lookup if match['url'] == url]
+        matches = [match for match in self.lookup if match['data'] == data]
 
         # TODO: if not matches
         # TODO: if multiple matches
