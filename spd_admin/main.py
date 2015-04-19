@@ -39,14 +39,14 @@ def run(config_filepath, deploy):
 
     if deploy:
 
-        def batch_handler(*args):
+        def batch_handler(instance):
             aggregator.write_run()
             deployer = tasks.Deploy(config)
             deployer.run()
 
     else:
 
-        def batch_handler(*args):
+        def batch_handler(instance):
             aggregator.write_run()
 
     batch_options['post_task'] = batch_handler

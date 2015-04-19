@@ -75,7 +75,7 @@ class Aggregator(Task):
 
     def get_lookup(self):
 
-        _keys = ['id', 'publisher_id', 'url', 'period_id']
+        _keys = ['id', 'publisher_id', 'data', 'period_id']
         lookup = []
         source_filepath = os.path.join(self.config['data_dir'], self.config['source_file'])
         with io.open(source_filepath, mode='r+t', encoding='utf-8') as f:
@@ -98,7 +98,7 @@ class Aggregator(Task):
         """Return a score for this pipeline run."""
 
         score = self.max_score
-        results = pipeline.generated_report['results']
+        results = pipeline.report.generate()['results']
 
         if not results:
             pass
