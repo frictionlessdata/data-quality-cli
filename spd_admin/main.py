@@ -36,8 +36,13 @@ def run(config_filepath, deploy, encoding):
     source_filepath = os.path.join(config['data_dir'], config['source_file'])
     aggregator = tasks.Aggregator(config)
     batch_options = {'pipeline_post_task': aggregator.run, 'data_key': 'data',
-                     'pipeline_options': {'encoding': encoding,
-                                          'processors': ('structure', 'schema')}}
+                     'pipeline_options': {
+                         'encoding': encoding,
+                         'processors': ('structure', 'schema'),
+                         'options': {
+                             'schema': {'case_insensitive_headers': True}
+                         }
+                     }}
 
     if deploy:
 
