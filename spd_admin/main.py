@@ -20,8 +20,9 @@ def cli():
 
 @cli.command()
 @click.argument('config_filepath')
+@click.option('--encoding', default=None)
 @click.option('--deploy', is_flag=True)
-def run(config_filepath, deploy):
+def run(config_filepath, deploy, encoding):
 
     """Process data sources for a Spend Publishing Dashboard instance."""
 
@@ -35,7 +36,8 @@ def run(config_filepath, deploy):
     source_filepath = os.path.join(config['data_dir'], config['source_file'])
     aggregator = tasks.Aggregator(config)
     batch_options = {'pipeline_post_task': aggregator.run,
-                     'data_key': 'data'}
+                     'data_key': 'data', 
+                     'pipeline_options': {'encoding': encoding}}
 
     if deploy:
 
