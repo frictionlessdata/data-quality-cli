@@ -27,7 +27,7 @@ def cd(path):
 
 class Task(object):
 
-    """Base class for Spend Publishing Dashboard tasks."""
+    """Base class for Data Quality CLI tasks."""
 
     def __init__(self, config, **kwargs):
         self.config = config
@@ -40,7 +40,8 @@ class Task(object):
 
 class Aggregator(Task):
 
-    """A Task runner to create results for data sources as they go through a processing pipeline."""
+    """A Task runner to create results for data sources as they move
+    through a processing pipeline."""
 
     def __init__(self, *args, **kwargs):
         super(Aggregator, self).__init__(*args, **kwargs)
@@ -130,7 +131,7 @@ class Aggregator(Task):
 
 class Deploy(Task):
 
-    """A Task runner to deploy a Spend Publishing Dashboard data repository."""
+    """A Task runner to deploy a Data Quality repository to a remote."""
 
     commit_msg = 'New result and run data.'
     tag_msg = 'New result and run data.'

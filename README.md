@@ -1,13 +1,20 @@
-[![Build Status](https://travis-ci.org/okfn/spd-admin.svg)](https://travis-ci.org/okfn/spd-admin)
-[![Coverage Status](https://coveralls.io/repos/okfn/spd-admin/badge.svg)](https://coveralls.io/r/okfn/spd-admin)
+[![Build Status](https://travis-ci.org/okfn/data-quality-cli.svg)](https://travis-ci.org/okfn/data-quality-cli)
+[![Coverage Status](https://coveralls.io/repos/okfn/data-quality-cli/badge.svg)](https://coveralls.io/r/okfn/data-quality-cli)
 
-# spd-admin
 
-Command line administration for Spend Publishing Dashboards.
+USE TABULATOR IN TASKS
+
+
+# Data Quality CLI
+
+A command line tool that assesses the data quality of a set of data sources (e.g.: CSV files of open data published by a government).
 
 ## What's it about?
 
-The `spd-admin` CLI is for administering data that belongs to a Spend Publishing
+The `dq` (alias: `dataquality`) CLI is a batch processor
+
+is for administering data that belongs to a Spend Publishing
+
 Dashboard (dashboard data is in itself a github repository:
 <a href="https://github.com/okfn/spd-data-example">see the example repository here</a>).
 
@@ -25,42 +32,40 @@ and deploys the updated data back to the central data repository (i.e: GitHub)
 * As the Spend Publishing Dashboard is a pure client-side application, as soon as updated
 data is deployed, the app will start working with the updated data.
 
-Note that  deployer/administrator does not need a new `spd-admin` environment per Spend Publishing
+Note that  deployer/administrator does not need a new `dq` environment per Spend Publishing
 Dashboard that she administers. Rather, there must be a config file per dashboard,
-based on `example-config.json`.
+based on `dq-config.example.json`.
 
-`spd-admin` currently provides two commands: `run` and `deploy`. Read more about these below.
+`dq` currently provides two commands: `run` and `deploy`. Read more about these below.
 
 ## Install
 
 ```
-pip install git+https://github.com/okfn/spd-admin.git#egg=spd_admin
+pip install git+https://github.com/okfn/dataquality-cli.git#egg=dataquality
 ```
 
 ## Use
 
 ```
-spd-admin --help
+dq --help
 ```
 
 ### Run
 
 ```
-spd-admin run /path/to/config.json --deploy
+dq run /path/to/config.json --deploy
 ```
 
-Runs a batch processor on all data sources in a data repository of a Spend Publishing Dashboard instance.
+Runs a *data quality assessment* on all data sources in a data repository.
 
-Writes aggregated results to the results.csv.
-
-Writes run meta data to the run.csv.
-
-If `--deploy` is passed, then also commits, tags and pushes the new changes back to the data repositories central repository.
+* Writes aggregated results to the results.csv.
+* Writes run meta data to the run.csv.
+* If `--deploy` is passed, then also commits, tags and pushes the new changes back to the data repositories central repository.
 
 ### Deploy
 
 ```
-spd-admin deploy /path/to/config.json
+dq deploy /path/to/config.json
 ```
 
-Deploys a data repository for a Spend Publishing Dashboard instance.
+Deploys this Data Quality repository to a remote.
