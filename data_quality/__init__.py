@@ -6,8 +6,9 @@ from __future__ import unicode_literals
 
 import os
 import io
-from . import main
 from . import tasks
+from . import main
+
 
 
 def get_version():

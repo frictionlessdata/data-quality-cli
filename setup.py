@@ -17,7 +17,7 @@ def read(*paths):
 
 
 PACKAGE = 'data_quality'
-INSTALL_REQUIRES = ['click>=6.2', 'goodtables>=0.6.0', 'pytz']
+INSTALL_REQUIRES = ['click>=6.2', 'goodtables>=0.6.5', 'pytz']
 TESTS_REQUIRE = ['tox']
 README = read('README.md')
 VERSION = read(PACKAGE, 'VERSION')
@@ -57,8 +57,8 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'dq = dataquality.main:cli',
-            'dataquality = dataquality.main:cli'
+            'dq = data_quality.main:cli',
+            'dataquality = data_quality.main:cli'
         ]
     },
 )

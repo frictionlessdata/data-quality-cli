@@ -27,7 +27,7 @@ Dashboard she is administering
 * The deployer/administrator, or possibly content editor, occasionally updates
 the `sources.csv` file in the data directory with new data sources
 * Periodically (once a month, once a quarter), the deployer/administrator does
-`spd-admin run /path/to-config.json --deploy`. This builds a new set of results for the data,
+`dq run /path/to-config.json --deploy`. This builds a new set of results for the data,
 and deploys the updated data back to the central data repository (i.e: GitHub)
 * As the Spend Publishing Dashboard is a pure client-side application, as soon as updated
 data is deployed, the app will start working with the updated data.
@@ -69,3 +69,41 @@ dq deploy /path/to/config.json
 ```
 
 Deploys this Data Quality repository to a remote.
+
+### Schema
+
+```json
+{
+  "data_dir": "data",  # folder that contains the source_file and publisher_file
+  "cache_dir": "fetched",  # folder that will store each source as local cache
+  "result_file": "results.csv",  # will contain the result for each source
+  "run_file": "runs.csv",   # will contain the report for each collection of sources
+  "source_file": "sources.csv",   # collection of sources that will be analyzed
+  "publisher_file": "publishers.csv",   # publishers of the above mentioned sources
+  "performance_file": "performance.csv", # will contain the results for each publisher
+  "remotes": ["origin"],
+  "branch": "master",
+  "goodtables_web": "http://goodtables.okfnlabs.org", 
+  "data_key": "data",   # column from source_file that contains path/url to data source
+  "schema_key": "schema",   # column from source_file that contains path/url to schema
+  "format_key": "format",   # column from source_file that contains file format (csv, xls)
+  "encoding_key": "encoding",   #column from source_file that contains file encoding
+  "sleep": 2,   # time in seconds to wait between pipelines
+  "goodtables": {
+    "location": "http://goodtables.okfnlabs.org",
+    "processors": ["structure", "schema"],  # what processors should analyze the sources
+    "arguments": {
+      "encoding": "ISO-8859-2",   # specify encoding for all sources
+      "pipeline": {
+        "post_task": "",   # execute something after a pipeline analysis is finished
+        "options": {   # pass pipeline related options
+          "schema": {"case_insensitive_headers": true}
+        }
+      },
+      "batch": {
+        "post_task": "",    # execute something after a batch analysis is finished
+      }
+    }
+  }
+}
+```

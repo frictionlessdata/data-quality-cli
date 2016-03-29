@@ -12,6 +12,6 @@ import subprocess
 class TestDataQualityCLI(unittest.TestCase):
 
     def test_start(self):
-        config_path = os.path.join('fixtures', 'dp.json')
+        config_path = os.path.join('fixtures', 'dq.json')
         c = ['python', os.path.join('data_quality', 'main.py'), 'run', config_path]
         subprocess.check_output(c)

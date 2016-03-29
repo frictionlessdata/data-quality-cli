@@ -1,13 +1,11 @@
 {
-    "data_dir": "",
-    "cache_dir": "../fixtures/fetched",
+    "data_dir": "/PATH/TO/DATA/DIRECTORY",
+    "cache_dir": "/PATH/TO/CACHE/DIRECTORY"
     "result_file": "results.csv",
     "run_file": "runs.csv",
     "source_file": "sources.csv",
     "publisher_file": "publishers.csv",
     "remotes": ["origin"],
     "branch": "master",
-    "goodtables_web": "http://goodtables.okfnlabs.org",
-    "format_key": "format",
-    "schema_key": "schema"
+    "goodtables_web": "http://goodtables.okfnlabs.org"
 }

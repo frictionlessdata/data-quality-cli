@@ -6,14 +6,13 @@ from __future__ import unicode_literals
 
 import os
 import io
-import json
 import csv
 import uuid
 import datetime
 import subprocess
 import contextlib
 import pytz
-from . import compat
+from data_quality import compat
 
 
 @contextlib.contextmanager
@@ -33,8 +32,11 @@ class Task(object):
         self.config = config
         self.remotes = self.config['remotes']
         self.branch = self.config['branch']
-        self.result_file = os.path.join(self.config['data_dir'], self.config['result_file'])
-        self.run_file = os.path.join(self.config['data_dir'], self.config['run_file'])
+        self.result_file = os.path.join(self.config['data_dir'],
+                                        self.config['result_file'])
+        self.run_file = os.path.join(self.config['data_dir'],
+                                     self.config['run_file'])
+        self.cache_dir = self.config['cache_dir']
         self.all_scores = []
 
 
@@ -57,30 +59,35 @@ class Aggregator(Task):
     def run(self, pipeline):
         """Run on a Pipeline instance."""
 
-        with io.open(self.result_file, mode='a+t', encoding='utf-8') as f:
+        with io.open(self.result_file, mode='a+t', encoding='utf-8') as result_file:
 
-            source = self.get_source(pipeline.data.data_source)
+            source = self.get_source(pipeline.data_source)
             result_id = uuid.uuid4().hex
             period_id = source['period_id']
             score = compat.str(self.get_pipeline_score(pipeline))
-            data = pipeline.data.data_source
+            data_source = pipeline.data_source
             schema = '' # pipeline.pipeline[1].schema_source
             summary = '' # TODO: how/what should a summary be?
             report = self.get_pipeline_report_url(pipeline)
 
             result_set = ','.join([result_id, source['id'], source['publisher_id'],
-                                   source['period_id'], score, data, schema,
+                                   period_id, score, data_source, schema,
                                    summary, self.run_id, self.timestamp, report])
 
-            f.write('{0}\n'.format(result_set))
+            result_file.write('{0}\n'.format(result_set))
+        
+        if pipeline.data:
+            self.fetch_data(pipeline.data.stream, source['id'])
 
     def get_lookup(self):
 
         _keys = ['id', 'publisher_id', 'data', 'period_id']
         lookup = []
-        source_filepath = os.path.join(self.config['data_dir'], self.config['source_file'])
-        with io.open(source_filepath, mode='r+t', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
+        source_filepath = os.path.join(self.config['data_dir'],
+                                       self.config['source_file'])
+
+        with io.open(source_filepath, mode='r+t', encoding='utf-8') as sources:
+            reader = csv.DictReader(sources)
             for row in reader:
                 lookup.append({k: v for k, v in row.items() if k in _keys})
 
@@ -127,7 +134,19 @@ class Aggregator(Task):
             rf.write('{0}\n'.format(entry))
 
         return True
-
+    
+    def fetch_data(self, data_stream, source_id):
+        """Cache the data source in the /fetched directory"""
+        
+        cached_file_name = os.path.join(self.cache_dir, source_id)
+        data_stream.seek(0)
+        
+        with io.open(cached_file_name, mode='w+', encoding='utf-8') as file:
+            for line in data_stream:
+                file.write(line)
+        
+        
+        
 
 class Deploy(Task):
 
@@ -135,6 +154,7 @@ class Deploy(Task):
 
     commit_msg = 'New result and run data.'
     tag_msg = 'New result and run data.'
+    tag_version = ''
 
     def run(self, *args):
         """Commit and deploy changes."""
@@ -173,20 +193,16 @@ class Deploy(Task):
     def _commit(self):
 
         with cd(self.config['data_dir']):
-
             command = ['git', 'commit', '-a', '-m', '{0}'.format(self.commit_msg)]
             subprocess.call(command)
 
     def _tag(self):
-
         with cd(self.config['data_dir']):
-
             command = ['git', 'tag', '-a', self.tag_version, '-m', '{0}'.format(self.tag_msg)]
             subprocess.call(command)
 
     def _push(self):
 
         with cd(self.config['data_dir']):
-
             command = ['git', 'push', '--follow-tags']
             subprocess.call(command)
