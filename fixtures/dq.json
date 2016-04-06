@@ -5,6 +5,7 @@
     "run_file": "runs.csv",
     "source_file": "sources.csv",
     "publisher_file": "publishers.csv",
+    "performance_file": "performance.csv",
     "remotes": ["origin"],
     "branch": "master",
     "goodtables_web": "http://goodtables.okfnlabs.org",

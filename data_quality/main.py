@@ -55,6 +55,8 @@ def run(config_filepath, deploy, encoding):
 
         def batch_handler(instance):
             aggregator.write_run()
+            assesser = tasks.AssessPerformance(config) 
+            assesser.run()
             deployer = tasks.Deploy(config)
             deployer.run()
 
@@ -62,6 +64,8 @@ def run(config_filepath, deploy, encoding):
 
         def batch_handler(instance):
             aggregator.write_run()
+            assesser = tasks.AssessPerformance(config) 
+            assesser.run()
             
     batch_options['post_task'] = batch_handler
     batch = pipeline.Batch(source_filepath, **batch_options)
