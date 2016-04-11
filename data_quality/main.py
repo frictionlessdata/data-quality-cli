@@ -10,6 +10,7 @@ import sys
 import io
 import json
 import click
+import collections
 from goodtables import pipeline
 from data_quality import tasks
 
@@ -39,17 +40,8 @@ def run(config_filepath, deploy, encoding):
                                            config['cache_dir'])
                                           
     set_up_cache_dir(config['cache_dir'])
- 
     source_filepath = os.path.join(config['data_dir'], config['source_file'])
     aggregator = tasks.Aggregator(config)
-    batch_options = {'pipeline_post_task': aggregator.run, 'data_key': 'data',
-                     'pipeline_options': {
-                         'encoding': encoding,
-                         'processors': ('structure', 'schema'),
-                         'options': {
-                             'schema': {'case_insensitive_headers': True}
-                         }
-                     }}
 
     if deploy:
 
@@ -66,8 +58,28 @@ def run(config_filepath, deploy, encoding):
             aggregator.write_run()
             assesser = tasks.AssessPerformance(config) 
             assesser.run()
-            
-    batch_options['post_task'] = batch_handler
+
+    default_batch_options = {
+        'goodtables': {
+            'arguments': {
+                'pipeline': {
+                    'processors': ['structure', 'schema'],
+                    'options': {
+                        'schema': {'case_insensitive_headers': True}
+                    }
+                },
+                'batch': {
+                    'data_key': 'data',
+                    'post_task': batch_handler,
+                    'pipeline_post_task': aggregator.run
+                }
+            }
+        }
+    }
+
+    options = deep_update(default_batch_options, config)
+    batch_options = options['goodtables']['arguments']['batch']
+    batch_options['pipeline_options'] = options['goodtables']['arguments']['pipeline']
     batch = pipeline.Batch(source_filepath, **batch_options)
     batch.run()
 
@@ -96,6 +108,22 @@ def set_up_cache_dir(cache_dir_path):
                 shutil.rmtree(os.path.join(root, directory))
     else: 
         raise OSError("The folder chosen as \'cache_dir\' does not exist.")
+
+def deep_update(source_dict, new_dict):
+    """Update a nested dictionary (modified in place) with another dictionary.
+
+    Args:
+        source_dict: dict to be updated
+        new_dict: dict to update with
+
+    """
+    for key, value in new_dict.items():
+        if isinstance(value, collections.Mapping) and value:
+            returned = deep_update(source_dict.get(key, {}), value)
+            source_dict[key] = returned
+        else:
+            source_dict[key] = new_dict[key]
+    return source_dict
 
 if __name__ == '__main__':
     cli()

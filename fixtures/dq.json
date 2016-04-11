@@ -8,7 +8,20 @@
     "performance_file": "performance.csv",
     "remotes": ["origin"],
     "branch": "master",
-    "goodtables_web": "http://goodtables.okfnlabs.org",
-    "format_key": "format",
-    "schema_key": "schema"
+    "goodtables": {
+        "goodtables_web": "http://goodtables.okfnlabs.org",
+        "arguments": {
+            "pipeline": {
+                "processors": ["schema", "structure"],
+                "encoding": "utf-8",
+                "options": {
+                    "schema": {"case_insensitive_headers": true}
+                }
+            },
+            "batch": {
+                "format_key": "format",
+                "schema_key": "schema"
+            }
+        }
+    }
 }

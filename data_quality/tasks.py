@@ -112,9 +112,9 @@ class Aggregator(Task):
             with io.open(filepath, mode='w+', encoding='utf-8') as file:
                 file.write(header_string + '\n')
 
-    def get_source(self, data):
+    def get_source(self, data_src):
 
-        matches = [match for match in self.lookup if match['data'] == data]
+        matches = [match for match in self.lookup if match['data'] == data_src]
 
         # TODO: if not matches
         # TODO: if multiple matches
@@ -143,7 +143,7 @@ class Aggregator(Task):
     def get_pipeline_report_url(self, pipeline):
         """Return a URL to a report on this data."""
 
-        return self.config['goodtables_web']
+        return self.config['goodtables']['goodtables_web']
 
     def write_run(self):
         """Write this run in the run file."""
