@@ -41,7 +41,23 @@ def run(config_filepath, deploy, encoding):
                                           
     set_up_cache_dir(config['cache_dir'])
     source_filepath = os.path.join(config['data_dir'], config['source_file'])
-    aggregator = tasks.Aggregator(config)
+    default_batch_options = {
+        'goodtables': {
+            'arguments': {
+                'pipeline': {
+                    'processors': ['structure', 'schema'],
+                    'options': {
+                        'schema': {'case_insensitive_headers': True}
+                    }
+                },
+                'batch': {
+                    'data_key': 'data'
+                }
+            }
+        }
+    }
+    options = deep_update(default_batch_options, config)
+    aggregator = tasks.Aggregator(options)
 
     if deploy:
 
@@ -59,25 +75,8 @@ def run(config_filepath, deploy, encoding):
             assesser = tasks.AssessPerformance(config) 
             assesser.run()
 
-    default_batch_options = {
-        'goodtables': {
-            'arguments': {
-                'pipeline': {
-                    'processors': ['structure', 'schema'],
-                    'options': {
-                        'schema': {'case_insensitive_headers': True}
-                    }
-                },
-                'batch': {
-                    'data_key': 'data',
-                    'post_task': batch_handler,
-                    'pipeline_post_task': aggregator.run
-                }
-            }
-        }
-    }
-
-    options = deep_update(default_batch_options, config)
+    post_tasks = {'post_task': batch_handler, 'pipeline_post_task': aggregator.run}
+    options['goodtables']['arguments']['batch'].update(post_tasks)
     batch_options = options['goodtables']['arguments']['batch']
     batch_options['pipeline_options'] = options['goodtables']['arguments']['pipeline']
     batch = pipeline.Batch(source_filepath, **batch_options)

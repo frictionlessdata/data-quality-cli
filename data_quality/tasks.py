@@ -14,7 +14,8 @@ import contextlib
 import pytz
 import re
 import dateutil
-from data_quality import compat
+from .utilities import compat
+from .utilities import exceptions
 
 
 @contextlib.contextmanager
@@ -88,8 +89,9 @@ class Aggregator(Task):
             self.fetch_data(pipeline.data.stream, source['id'])
 
     def get_lookup(self):
-
-        _keys = ['id', 'publisher_id', 'data', 'period_id']
+        
+        data_key = self.config['goodtables']['arguments']['batch']['data_key']
+        _keys = ['id', 'publisher_id', data_key , 'period_id']
         lookup = []
 
         with io.open(self.sources_file, mode='r+t', encoding='utf-8') as sources:
@@ -113,11 +115,20 @@ class Aggregator(Task):
                 file.write(header_string + '\n')
 
     def get_source(self, data_src):
+        """Find the entry correspoding to data_src from sources file"""
 
-        matches = [match for match in self.lookup if match['data'] == data_src]
+        data_key = self.config['goodtables']['arguments']['batch']['data_key']
+        matches = [match for match in self.lookup if match[data_key] == data_src]
 
-        # TODO: if not matches
-        # TODO: if multiple matches
+        if len(matches) == 0:
+            raise exceptions.SourceNotFoundError(source=data_src)
+        elif len(matches) > 1:
+            for pos in range(len(matches)-1):
+                first_values = set(matches[pos].values())
+                second_values = set(matches[pos+1].values())
+                differences = first_values.symmetric_difference(second_values)
+                if len(differences) != 0:
+                    raise exceptions.DuplicateDataSourceError(source=data_src)
 
         return matches[0]
 
