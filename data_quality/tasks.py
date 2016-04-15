@@ -84,9 +84,9 @@ class Aggregator(Task):
                                    summary, self.run_id, self.timestamp, report])
 
             result_file.write('{0}\n'.format(result_set))
-        
-        if pipeline.data:
-            self.fetch_data(pipeline.data.stream, source['id'])
+
+            if pipeline.data:
+                self.fetch_data(pipeline.data.stream, source)
 
     def get_lookup(self):
         
@@ -165,10 +165,12 @@ class Aggregator(Task):
 
         return True
     
-    def fetch_data(self, data_stream, source_id):
+    def fetch_data(self, data_stream, source):
         """Cache the data source in the /fetched directory"""
         
-        cached_file_name = os.path.join(self.cache_dir, source_id)
+        data_key = self.config['goodtables']['arguments']['batch']['data_key']
+        source_name = source.get('name', source[data_key].rsplit('/', 1)[-1])
+        cached_file_name = os.path.join(self.cache_dir, source_name)
         data_stream.seek(0)
         
         with io.open(cached_file_name, mode='w+', encoding='utf-8') as file:
