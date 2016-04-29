@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from time import gmtime, strftime
 import os
 import io
 import csv
@@ -13,6 +14,7 @@ import subprocess
 import contextlib
 import pytz
 import re
+import json
 import dateutil
 from .utilities import compat
 from .utilities import exceptions
@@ -75,7 +77,7 @@ class Aggregator(Task):
             period_id = source['period_id']
             score = compat.str(self.get_pipeline_score(pipeline))
             data_source = pipeline.data_source
-            schema = '' # pipeline.pipeline[1].schema_source
+            schema = ''
             summary = '' # TODO: how/what should a summary be?
             report = self.get_pipeline_report_url(pipeline)
 
@@ -428,6 +430,7 @@ class Deploy(Task):
         """Commit and deploy changes."""
 
         self._pull()
+        self.update_last_modified()
         self._add()
         self._commit()
         # self._tag()
@@ -474,3 +477,17 @@ class Deploy(Task):
         with cd(self.config['data_dir']):
             command = ['git', 'push', '--follow-tags']
             subprocess.call(command)
+
+    def update_last_modified(self):
+
+        instance_file = os.path.join(self.config['data_dir'], 'instance.json')
+        instance_metadata = {}
+        if os.path.lexists(instance_file):
+            with io.open(instance_file, mode='r', encoding='utf-8') as instance:
+                instance_metadata = json.loads(instance.read())
+
+            with io.open(instance_file, mode='w+', encoding='utf-8') as instance:
+                current_time = strftime("%Y-%m-%d %H:%M:%S %Z", gmtime())
+                instance_metadata['last_modified'] = current_time
+                updated_json = json.dumps(instance_metadata, indent=4)
+                instance.write(compat.str(updated_json))
