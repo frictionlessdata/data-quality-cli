@@ -1,3 +1,0 @@
-Click>=3.3
-goodtables>=0.6.5
-pytz

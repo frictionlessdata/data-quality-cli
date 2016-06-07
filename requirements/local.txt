@@ -1,5 +1,0 @@
--r base.txt
-
-ipython
-ipdb
-Sphinx
