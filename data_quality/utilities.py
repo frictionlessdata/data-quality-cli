@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import os
 import shutil
 import collections
+from data_quality import compat
 
 def set_up_cache_dir(cache_dir_path):
     """Reset /cache_dir before a new batch."""
@@ -36,3 +37,16 @@ def deep_update_dict(source_dict, new_dict):
         else:
             source_dict[key] = new_dict[key]
     return source_dict
+
+def format_row(row_dict, header_list):
+    """Format the values of a dict accoording to the headers list"""
+
+    ordered = []
+    for key in header_list:
+        value = row_dict.get(key)
+        if value is not str or bytes:
+            ordered.append(str(value))
+        else:
+            ordered.append(value)
+
+    return ordered
