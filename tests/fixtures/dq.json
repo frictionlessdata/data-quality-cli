@@ -1,6 +1,6 @@
 {
     "data_dir": "",
-    "cache_dir": "../fixtures/fetched",
+    "cache_dir": "fetched",
     "result_file": "results.csv",
     "run_file": "runs.csv",
     "source_file": "sources.csv",

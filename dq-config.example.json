@@ -1,6 +1,6 @@
 {
     "data_dir": "/PATH/TO/DATA/DIRECTORY",
-    "cache_dir": "/PATH/TO/CACHE/DIRECTORY"
+    "cache_dir": "/PATH/TO/CACHE/DIRECTORY",
     "result_file": "results.csv",
     "run_file": "runs.csv",
     "source_file": "sources.csv",
