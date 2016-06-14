@@ -246,4 +246,8 @@ overall . The performance is calculated per period in order to track their progr
 | valid | percent of valid sources from the analyzed period |
 | files_count_to_date | total number of files published up to the analyzed period |
 | score_to_date | average score of all files published up to the analyzed period |
-| valid_to_date | percent of valid files from all published up to the analyzed period |
+| valid_to_date | number of all valid files published up to the analyzed period |
+
+
+
+

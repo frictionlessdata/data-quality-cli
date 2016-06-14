@@ -16,7 +16,9 @@ import pytz
 import re
 import json
 import dateutil
-from data_quality import compat, exceptions, utilities
+from .utilities import compat
+from .utilities import exceptions
+
 
 @contextlib.contextmanager
 def cd(path):
@@ -39,7 +41,7 @@ class Task(object):
         self.result_file = os.path.join(self.data_dir, self.config['result_file'])
         self.run_file = os.path.join(self.data_dir, self.config['run_file'])
         self.sources_file = os.path.join(self.data_dir, self.config['source_file'])
-        self.performance_file = os.path.join(self.data_dir,
+        self.performance_file = os.path.join(self.data_dir, 
                                              self.config['performance_file'])
         self.publishers_file = os.path.join(self.data_dir,
                                              self.config['publisher_file'])
@@ -69,7 +71,7 @@ class Aggregator(Task):
     def run(self, pipeline):
         """Run on a Pipeline instance."""
 
-        with compat.UnicodeAppender(self.result_file, quoting=csv.QUOTE_MINIMAL) as result_file:
+        with io.open(self.result_file, mode='a+t', encoding='utf-8') as result_file:
             source = self.get_source(pipeline.data_source)
             result_id = uuid.uuid4().hex
             period_id = source['period_id']
@@ -79,17 +81,17 @@ class Aggregator(Task):
             summary = '' # TODO: how/what should a summary be?
             report = self.get_pipeline_report_url(pipeline)
 
-            result = [result_id, source['id'], source['publisher_id'],
+            result_set = ','.join([result_id, source['id'], source['publisher_id'],
                                    period_id, score, data_source, schema,
-                                   summary, self.run_id, self.timestamp, report]
+                                   summary, self.run_id, self.timestamp, report])
 
-            result_file.writerow(result)
+            result_file.write('{0}\n'.format(result_set))
 
             if pipeline.data:
                 self.fetch_data(pipeline.data.stream, source)
 
     def get_lookup(self):
-
+        
         data_key = self.config['goodtables']['arguments']['batch']['data_key']
         _keys = ['id', 'publisher_id', data_key , 'period_id']
         lookup = []
@@ -109,9 +111,10 @@ class Aggregator(Task):
             headers: a tuple to write as header
 
         """
+        header_string = ','.join(headers)
         if not os.path.exists(filepath):
-            with compat.UnicodeWriter(filepath, quoting=csv.QUOTE_MINIMAL) as file:
-                file.writerow(headers)
+            with io.open(filepath, mode='w+', encoding='utf-8') as file:
+                file.write(header_string + '\n')
 
     def get_source(self, data_src):
         """Find the entry correspoding to data_src from sources file"""
@@ -158,25 +161,25 @@ class Aggregator(Task):
     def write_run(self):
         """Write this run in the run file."""
 
-        with compat.UnicodeAppender(self.run_file, quoting=csv.QUOTE_MINIMAL) as run_file:
-            entry = [self.run_id, self.timestamp, str(int(sum(self.all_scores) / len(self.lookup)))]
-            run_file.writerow(entry)
+        with io.open(self.run_file, mode='a+t', encoding='utf-8') as rf:
+            entry = ','.join([self.run_id, self.timestamp, str(int(sum(self.all_scores) / len(self.lookup)))])
+            rf.write('{0}\n'.format(entry))
 
         return True
-
+    
     def fetch_data(self, data_stream, source):
         """Cache the data source in the /fetched directory"""
-
+        
         data_key = self.config['goodtables']['arguments']['batch']['data_key']
         source_name = source.get('name', source[data_key].rsplit('/', 1)[-1])
         cached_file_name = os.path.join(self.cache_dir, source_name)
         data_stream.seek(0)
-
-        with io.open(cached_file_name, mode='w+') as file:
+        
+        with io.open(cached_file_name, mode='w+', encoding='utf-8') as file:
             for line in data_stream:
                 file.write(line)
 
-
+        
 class AssessPerformance(Task):
 
     """A Task runner to assess and write the performance of publishers for each
@@ -187,13 +190,18 @@ class AssessPerformance(Task):
 
     def run(self):
         """Write the performance for all publishers."""
+        
+        def format_row(row_dict, header_list):
+            ordered = list(row_dict.get(key) for key in header_list)
+            string_values = [str(val) for val in ordered]
+            return ','.join(string_values)
 
         publisher_ids = self.get_publishers()
-
-        with compat.UnicodeWriter(self.performance_file, quoting=csv.QUOTE_MINIMAL) as pfile:
+        
+        with io.open(self.performance_file, mode='w+', encoding='utf-8') as pfile:
             fieldnames = ['publisher_id', 'period_id', 'files_count', 'score', 'valid',
                           'files_count_to_date', 'score_to_date', 'valid_to_date']
-            pfile.writerow(fieldnames)
+            pfile.write(','.join(fieldnames) + '\n')
             available_periods = []
 
             for publisher_id in publisher_ids:
@@ -212,13 +220,13 @@ class AssessPerformance(Task):
                 publishers_performances += performances
                 all_sources += sources
                 for performance in performances:
-                    formated_row = utilities.format_row(performance, fieldnames)
-                    pfile.writerow(formated_row)
+                    formated_row = format_row(performance, fieldnames)
+                    pfile.write('{0}\n'.format(formated_row))
 
             all_performances = self.get_periods_data('all', all_periods, all_sources)
 
             for performance in all_performances:
-                pfile.writerow(utilities.format_row(performance, fieldnames))
+                pfile.write('{0}\n'.format(format_row(performance, fieldnames)))
 
     def get_publishers(self):
         """Return list of publishers ids."""
@@ -347,7 +355,7 @@ class AssessPerformance(Task):
         Args:
             period_sources: sources correspoding to a certain period
         """
-
+    
         score = 0
 
         if len(period_sources) > 0:

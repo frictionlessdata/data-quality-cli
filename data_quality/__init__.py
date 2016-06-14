@@ -8,12 +8,14 @@ import os
 import io
 from . import tasks
 from . import main
-from . import utilities
+
+
 
 def get_version():
     version_path = os.path.join(os.path.dirname(__file__), 'VERSION')
     return io.open(version_path, encoding='utf-8').readline().strip()
 
+
 __version__ = get_version()
 
-__all__ = ['main', 'tasks', 'utilities']
+__all__ = ['main', 'tasks']
