@@ -71,6 +71,45 @@ dq deploy /path/to/config.json
 
 Deploys this Data Quality repository to a remote.
 
+### Generate
+
+Generic command:
+
+```
+dq generate generator_name http://endpoint_to_data_sources
+```
+
+There is currently one built-in generator for [CKAN](http://ckan.org/) instances.
+Ex: In the example below, we generate a database from `data.qld.gov.au`:
+
+```
+dq generate ckan https://data.qld.gov.au/
+```
+
+By default, it will include only `CSV` and `excel`(`XLS`, `XLSX`) files. If you want to change that use
+the `--file_type` option. In the example below, we ask for `CSV` and `TXT`:
+
+```
+dq generate ckan https://data.qld.gov.au/  --file_type csv --file_type txt
+```
+
+If you want to built a custom Generator, just inherit and overwrite the methods of `data_quality.generators.BaseGenerator` class.
+To load your custom generator class you need to provide the path to it so that it can be imported via
+[importlib.import_module](https://docs.python.org/3/library/importlib.html#importlib.import_module).
+You can either provide it in the config, or by using the `--generator_class_path` option:
+
+```
+dq generate custom_generator_name endpoint --generator_class_path mymodule.MyGenerator
+
+```
+
+If no config file is provided, the generator will use the [default configuration](###default-configuration)
+creating the files in the folder where the command is executed. If you want to change that, use the `--config_filepath` option:
+
+```
+dq generate generator_name endpoint --config_filepath path/to/config
+```
+
 ### Structure of json config
 
 ```json
@@ -98,6 +137,9 @@ Deploys this Data Quality repository to a remote.
 
   "remotes": ["origin"],
   "branch": "master",
+  
+  #name and path to custom generator (this name should be used when executing the generate command)
+  "generator": {"my_generator_name": "my_module.MyGenerator" },
 
   # options for GoodTables ("http://goodtables.readthedocs.org/en/latest/")
   "goodtables": {
@@ -152,6 +194,31 @@ Deploys this Data Quality repository to a remote.
   }
 }
 ```
+
+### Default config 
+
+````json
+{
+    "data_dir": "current_working_directory/data",
+    "cache_dir": "current_working_directory/fetched",
+    "result_file": "results.csv",
+    "run_file": "runs.csv",
+    "source_file": "sources.csv",
+    "publisher_file": "publishers.csv",
+    "performance_file": "performance.csv",
+    "remotes": ["origin"],
+    "branch": "master",
+    "goodtables": {
+        "goodtables_web": "http://goodtables.okfnlabs.org",
+        "arguments": {
+            "pipeline": {},
+            "batch": {
+                "data_key": "data"
+            }
+        }
+    }
+}
+````
 
 ### Schema
 

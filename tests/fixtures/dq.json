@@ -20,7 +20,8 @@
             },
             "batch": {
                 "format_key": "format",
-                "schema_key": "schema"
+                "schema_key": "schema",
+                "data_key": "data"
             }
         }
     }

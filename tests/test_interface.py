@@ -7,11 +7,11 @@ from __future__ import unicode_literals
 import os
 import unittest
 import subprocess
-
+import data_quality
 
 class TestDataQualityCLI(unittest.TestCase):
 
-    def test_start(self):
+    def test_cli_run(self):
         config_path = os.path.join('tests', 'fixtures', 'dq.json')
-        c = ['python', os.path.join('data_quality', 'main.py'), 'run', config_path]
+        c = ['python', '-m', 'data_quality.main', 'run', config_path]
         subprocess.check_output(c)

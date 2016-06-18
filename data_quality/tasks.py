@@ -16,7 +16,10 @@ import pytz
 import re
 import json
 import dateutil
-from data_quality import compat, exceptions, utilities
+import importlib
+from runpy import run_path
+from pydoc import locate
+from . import compat, exceptions, generators
 
 @contextlib.contextmanager
 def cd(path):
@@ -56,10 +59,10 @@ class Aggregator(Task):
         super(Aggregator, self).__init__(*args, **kwargs)
         self.max_score = 10
         self.lookup = self.get_lookup()
-        self.run_schema = ('id', 'timestamp', 'total_score')
-        self.result_schema = ('id', 'source_id', 'publisher_id', 'period_id',
+        self.run_schema = ['id', 'timestamp', 'total_score']
+        self.result_schema = ['id', 'source_id', 'publisher_id', 'period_id',
                               'score', 'data', 'schema', 'summary', 'run_id',
-                              'timestamp', 'report')
+                              'timestamp', 'report']
         self.run_id = uuid.uuid4().hex
         self.timestamp = datetime.datetime.now(pytz.utc).isoformat()
 
@@ -86,7 +89,7 @@ class Aggregator(Task):
             result_file.writerow(result)
 
             if pipeline.data:
-                self.fetch_data(pipeline.data.stream, source)
+                self.fetch_data(pipeline.data.stream, pipeline.data.encoding, source)
 
     def get_lookup(self):
 
@@ -94,9 +97,8 @@ class Aggregator(Task):
         _keys = ['id', 'publisher_id', data_key , 'period_id']
         lookup = []
 
-        with io.open(self.sources_file, mode='r+t', encoding='utf-8') as sources:
-            reader = csv.DictReader(sources)
-            for row in reader:
+        with compat.UnicodeDictReader(self.sources_file) as sources_file:
+            for row in sources_file:
                 lookup.append({k: v for k, v in row.items() if k in _keys})
 
         return lookup
@@ -110,8 +112,8 @@ class Aggregator(Task):
 
         """
         if not os.path.exists(filepath):
-            with compat.UnicodeWriter(filepath, quoting=csv.QUOTE_MINIMAL) as file:
-                file.writerow(headers)
+            with compat.UnicodeWriter(filepath, quoting=csv.QUOTE_MINIMAL) as a_file:
+                a_file.writerow(headers)
 
     def get_source(self, data_src):
         """Find the entry correspoding to data_src from sources file"""
@@ -164,7 +166,7 @@ class Aggregator(Task):
 
         return True
 
-    def fetch_data(self, data_stream, source):
+    def fetch_data(self, data_stream, encoding, source):
         """Cache the data source in the /fetched directory"""
 
         data_key = self.config['goodtables']['arguments']['batch']['data_key']
@@ -172,9 +174,9 @@ class Aggregator(Task):
         cached_file_name = os.path.join(self.cache_dir, source_name)
         data_stream.seek(0)
 
-        with io.open(cached_file_name, mode='w+') as file:
+        with io.open(cached_file_name, mode='w+', encoding=encoding) as fetched_file:
             for line in data_stream:
-                file.write(line)
+                fetched_file.write(line)
 
 
 class AssessPerformance(Task):
@@ -189,11 +191,11 @@ class AssessPerformance(Task):
         """Write the performance for all publishers."""
 
         publisher_ids = self.get_publishers()
+        fieldnames = ['publisher_id', 'period_id', 'files_count', 'score', 'valid',
+                      'files_count_to_date', 'score_to_date', 'valid_to_date']
 
-        with compat.UnicodeWriter(self.performance_file, quoting=csv.QUOTE_MINIMAL) as pfile:
-            fieldnames = ['publisher_id', 'period_id', 'files_count', 'score', 'valid',
-                          'files_count_to_date', 'score_to_date', 'valid_to_date']
-            pfile.writerow(fieldnames)
+        with compat.UnicodeDictWriter(self.performance_file, fieldnames) as performance_file:
+            performance_file.writeheader()
             available_periods = []
 
             for publisher_id in publisher_ids:
@@ -212,21 +214,20 @@ class AssessPerformance(Task):
                 publishers_performances += performances
                 all_sources += sources
                 for performance in performances:
-                    formated_row = utilities.format_row(performance, fieldnames)
-                    pfile.writerow(formated_row)
+                    performance_file.writerow(performance)
 
             all_performances = self.get_periods_data('all', all_periods, all_sources)
 
             for performance in all_performances:
-                pfile.writerow(utilities.format_row(performance, fieldnames))
+                performance_file.writerow(performance)
 
     def get_publishers(self):
         """Return list of publishers ids."""
 
         publisher_ids = []
-        with io.open(self.publishers_file, mode='r', encoding='utf-8') as pub_file:
-            reader = csv.DictReader(pub_file)
-            for row in reader:
+
+        with compat.UnicodeDictReader(self.publishers_file) as publishers_file:
+            for row in publishers_file:
                 publisher_ids.append(row['id'])
         return publisher_ids
 
@@ -235,14 +236,12 @@ class AssessPerformance(Task):
 
         sources = []
 
-        with io.open(self.sources_file, mode='r', encoding='utf-8') as sources_file:
-            reader = csv.DictReader(sources_file)
-            for row in reader:
+        with compat.UnicodeDictReader(self.sources_file) as sources_file:
+            for row in sources_file:
                 source = {}
                 if row['publisher_id'] == publisher_id:
                     source['id'] = row['id']
-                    if row['period_id']:
-                        source['period_id'] = self.get_period(row['period_id'])
+                    source['period_id'] = self.get_period(row['period_id'])
                     source['score'] = self.get_source_score(source['id'])
                     sources.append(source)
         return sources
@@ -257,9 +256,8 @@ class AssessPerformance(Task):
         score = 0
         latest_timestamp = pytz.timezone('UTC').localize(datetime.datetime.min)
 
-        with io.open(self.result_file, mode='r', encoding='utf-8') as results_file:
-            reader = csv.DictReader(results_file)
-            for row in reader:
+        with compat.UnicodeDictReader(self.result_file) as result_file:
+            for row in result_file:
                 if row['source_id'] == source_id:
                     timestamp = dateutil.parser.parse(row['timestamp'])
                     if timestamp > latest_timestamp:
@@ -275,24 +273,10 @@ class AssessPerformance(Task):
 
         """
 
-        separators = re.findall(r"\W", period)
-        occurrences = [{char, separators.count(char)} for char in separators]
-        unique = [char for no_times, char in occurrences if no_times == 1]
-
-        if len(unique) == 1:
-            candidates = period.split(unique[0])
-            periods = []
-            for candidate in candidates:
-                try:
-                    date_object = dateutil.parser.parse(candidate, fuzzy=True).date()
-                    periods.append(date_object)
-                except ValueError:
-                    break
-            if len(periods) == len(candidates):
-                return periods[-1]
-
+        if not period:
+            return ''
         try:
-            date_object = dateutil.parser.parse(period, fuzzy=True).date()
+            date_object = dateutil.parser.parse(period).date()
             return date_object
         except ValueError:
             return ''
@@ -354,7 +338,7 @@ class AssessPerformance(Task):
             total = 0
             for source in period_sources:
                 total += int(source['score'])
-            score = round(total / len(period_sources))
+            score = int(round(total / len(period_sources)))
         return score
 
     def get_period_valid(self, period_sources):
@@ -371,7 +355,7 @@ class AssessPerformance(Task):
                 if int(source['score']) == 100:
                     valids.append(source)
             if valids:
-                valid = round(len(valids) / len(period_sources) * 100)
+                valid = int(round(len(valids) / len(period_sources) * 100))
         return valid
 
     def get_unique_periods(self, sources):
@@ -383,10 +367,8 @@ class AssessPerformance(Task):
         """
 
         periods = []
-
         for source in sources:
-            if source['period_id']:
-                periods.append(source['period_id'])
+            periods.append(source['period_id'])
         periods = list(set(periods))
         return periods
 
@@ -483,3 +465,34 @@ class Deploy(Task):
                 instance_metadata['last_modified'] = current_time
                 updated_json = json.dumps(instance_metadata, indent=4)
                 instance.write(compat.str(updated_json))
+
+class Generate(Task):
+
+    """A Task runner to generate a dataset from a certain resource (ex: CKAN)."""
+
+    def __init__(self, config):
+        super(Generate, self).__init__(config)
+
+    def run(self, generator_name, endpoint, generator_path, file_types):
+        """Delegate the generation processes to the chosen generator
+
+        Args:
+            generator_name: Name of the generator (ex: ckan)
+            endpoint: Url where the generator should get the data from
+            generator_path: Path to the custom generator class, if used
+            file_types: List of file types that should be included in sources
+        """
+
+        if  generators._built_in_generators.get(generator_name, None):
+            generator_class = generators._built_in_generators[generator_name]
+        else:
+            try:
+                _module, _class = generator_path.rsplit('.', 1)
+                generator_class = getattr(importlib.import_module(_module), _class)
+            except ValueError:
+                raise ValueError(('The path you provided for the generator class is '
+                                  'not valid. Should be of type `mymodule.MyGenerator`'))
+        generator = generator_class(endpoint)
+        generator.generate_publishers(self.publishers_file)
+        generator.generate_sources(self.sources_file, file_types=file_types)
+        return generator

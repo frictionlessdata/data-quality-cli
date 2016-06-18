@@ -5,9 +5,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
+import io
+import json
 import shutil
 import collections
-from data_quality import compat
+from . import compat
 
 def set_up_cache_dir(cache_dir_path):
     """Reset /cache_dir before a new batch."""
@@ -19,8 +21,59 @@ def set_up_cache_dir(cache_dir_path):
 
             for directory in dirs:
                 shutil.rmtree(os.path.join(root, directory))
-    else:
-        raise OSError("The folder chosen as \'cache_dir\' does not exist.")
+
+def resolve_dir(dir_path):
+    """ Make sure the dir_path given in the config exists
+
+        Args:
+            dir_path: path of directory from config that should be resolved
+    """
+
+    try:
+        os.makedirs(dir_path)
+    except OSError:
+        if not os.path.isdir(dir_path):
+            raise
+    return dir_path
+
+def resolve_dir_name(config_filepath, dir_path):
+    """Create an absolute path from the file path and the path given in the config"""
+
+    if not os.path.isabs(dir_path):
+       return os.path.join(os.path.dirname(config_filepath), dir_path)
+
+def load_json_config(config_filepath):
+    """Loads the json config into a dictionary, overwriting the defaults"""
+
+    default_config = {
+        'data_dir': 'data',
+        'cache_dir': 'fetched',
+        'result_file': 'results.csv',
+        'run_file': 'runs.csv',
+        'source_file': 'sources.csv',
+        'publisher_file': 'publishers.csv',
+        'performance_file': 'performance.csv',
+        'remotes': ['origin'],
+        'branch': 'master',
+        'goodtables': {
+            'goodtables_web': 'http://goodtables.okfnlabs.org',
+            'arguments': {
+                'pipeline': {},
+                'batch': {
+                    'data_key': 'data'
+                }
+            }
+        }
+    }
+
+    if not config_filepath:
+        return default_config
+    with io.open(config_filepath, mode='rt', encoding='utf-8') as file:
+        user_config = json.loads(file.read())
+        config = deep_update_dict(default_config, user_config)
+        config['data_dir'] = resolve_dir_name(config_filepath, config['data_dir'])
+        config['cache_dir'] = resolve_dir_name(config_filepath, config['cache_dir'])
+    return config
 
 def deep_update_dict(source_dict, new_dict):
     """Update a nested dictionary (modified in place) with another dictionary.
@@ -30,6 +83,7 @@ def deep_update_dict(source_dict, new_dict):
         new_dict: dict to update with
 
     """
+    
     for key, value in new_dict.items():
         if isinstance(value, collections.Mapping) and value:
             returned = deep_update_dict(source_dict.get(key, {}), value)
@@ -37,16 +91,3 @@ def deep_update_dict(source_dict, new_dict):
         else:
             source_dict[key] = new_dict[key]
     return source_dict
-
-def format_row(row_dict, header_list):
-    """Format the values of a dict accoording to the headers list"""
-
-    ordered = []
-    for key in header_list:
-        value = row_dict.get(key)
-        if value is not str or bytes:
-            ordered.append(str(value))
-        else:
-            ordered.append(value)
-
-    return ordered

@@ -8,6 +8,8 @@ import os
 import io
 from . import tasks
 from . import main
+from . import generators
+from . import compat
 from . import utilities
 
 def get_version():
@@ -16,4 +18,5 @@ def get_version():
 
 __version__ = get_version()
 
-__all__ = ['main', 'tasks', 'utilities']
+__all__ = ['main', 'tasks', 'generators', 'compat']
+
