@@ -1,8 +1,5 @@
-[![Build Status](https://travis-ci.org/okfn/data-quality-cli.svg)](https://travis-ci.org/okfn/data-quality-cli)
-[![Coverage Status](https://coveralls.io/repos/okfn/data-quality-cli/badge.svg)](https://coveralls.io/r/okfn/data-quality-cli)
-
-
-USE TABULATOR IN TASKS
+[![Build Status](https://travis-ci.org/frictionlessdata/data-quality-cli.svg)](https://travis-ci.org/frictionlessdata/data-quality-cli)
+[![Coverage Status](https://coveralls.io/repos/frictionlessdata/data-quality-cli/badge.svg)](https://coveralls.io/r/frictionlessdata/data-quality-cli)
 
 
 # Data Quality CLI
