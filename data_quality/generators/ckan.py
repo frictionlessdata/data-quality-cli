@@ -7,36 +7,44 @@ from __future__ import unicode_literals
 import csv
 import requests
 from os import path
-from data_quality import compat
+import jsontableschema
+from data_quality import compat, utilities
 from .base import BaseGenerator
 
 class CkanGenerator(BaseGenerator):
     """This class generates a csv database from a CKAN instance located at the given url"""
 
-    def __init__(self, url=None):
+    def __init__(self, url=None, datapackage=None):
         """Create an instance if the source url is given.
 
         Args:
             url: the base url for the CKAN instance
         """
 
-        super(CkanGenerator, self).__init__(url)
+        super(CkanGenerator, self).__init__(url, datapackage)
 
     def generate_sources(self, sources_filepath, file_types=['csv','excel']):
         """Generates sources_file from the url"""
 
-        fieldnames = ['id', 'publisher_id', 'title', 'data', 'format', 'period_id']
         file_types = [ftype.lower() for ftype in file_types]
         results = self.get_sources()
         sources = []
+        source_resource = utilities.get_resource_by_name('source_file',
+                                                         self.datapackage)
+        source_schema = jsontableschema.model.SchemaModel(source_resource.metadata['schema'])
         for result in results:
             sources += self.extract_sources(result, file_types)
 
-        with compat.UnicodeDictWriter(sources_filepath, fieldnames,
-                                      quoting=csv.QUOTE_MINIMAL) as sfile:
-            sfile.writeheader()
+        with compat.UnicodeWriter(sources_filepath,
+                                  quoting=csv.QUOTE_MINIMAL) as sfile:
+            sfile.writerow(source_schema.headers)
             for source in sources:
-                sfile.writerow(source)
+                try:
+                    values = [compat.str(source[key]) for key in source_schema.headers]
+                    sfile.writerow(list(source_schema.convert_row(*values)))
+                except jsontableschema.exceptions.MultipleInvalid as e:
+                    for error in e.errors:
+                        raise error
 
     def get_sources(self):
         """Get all sources from CKAN API as a list"""
@@ -81,14 +89,21 @@ class CkanGenerator(BaseGenerator):
         """Generates publishers_file from the url"""
 
         results = self.get_publishers()
-        fieldnames = ['id', 'title', 'type', 'contact', 'email']
+        pub_resource = utilities.get_resource_by_name('publisher_file',
+                                                      self.datapackage)
+        pub_schema = jsontableschema.model.SchemaModel(pub_resource.metadata['schema'])
 
-        with compat.UnicodeDictWriter(publishers_filepath, fieldnames,
+        with compat.UnicodeWriter(publishers_filepath,
                                       quoting=csv.QUOTE_MINIMAL) as pfile:
-            pfile.writeheader()
+            pfile.writerow(pub_schema.headers)
             for result in results:
                 result = self.extract_publisher(result)
-                pfile.writerow(result)
+                try:
+                    values = [result[key] for key in pub_schema.headers]
+                    pfile.writerow(list(pub_schema.convert_row(*values)))
+                except jsontableschema.exceptions.MultipleInvalid as e:
+                    for error in e.errors:
+                        raise error
 
     def get_publishers(self):
         """Retrieves the publishers from CKAN API as a list"""

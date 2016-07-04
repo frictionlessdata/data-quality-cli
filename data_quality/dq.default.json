@@ -1,5 +1,5 @@
 {
-    "data_dir": "",
+    "data_dir": "data",
     "cache_dir": "fetched",
     "result_file": "results.csv",
     "run_file": "runs.csv",
@@ -12,16 +12,8 @@
     "goodtables": {
         "goodtables_web": "http://goodtables.okfnlabs.org",
         "arguments": {
-            "pipeline": {
-                "processors": ["schema", "structure"],
-                "encoding": "utf-8",
-                "options": {
-                    "schema": {"case_insensitive_headers": true}
-                }
-            },
+            "pipeline": {},
             "batch": {
-                "format_key": "format",
-                "schema_key": "schema",
                 "data_key": "data"
             }
         }

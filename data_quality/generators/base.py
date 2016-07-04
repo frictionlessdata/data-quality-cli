@@ -8,9 +8,11 @@ from __future__ import unicode_literals
 class BaseGenerator(object):
     """This is the base class for generators. All generators should inherit."""
 
-    def __init__(self, url=None):
+    def __init__(self, url=None, datapackage=None):
 
         self.base_url = url
+        self.datapackage = datapackage
+
         if not self.base_url:
             raise TypeError('Cannot generate the database without the "url" parameter.')
 

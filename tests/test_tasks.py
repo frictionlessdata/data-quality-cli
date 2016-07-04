@@ -37,7 +37,7 @@ class TestTasks(unittest.TestCase):
         batch_options = config['goodtables']['arguments']['batch']
         batch_options['post_task'] = mokup_function
         batch_options['pipeline_options'] = config['goodtables']['arguments']['pipeline']
-        batch = pipeline.Batch(aggregator.sources_file, **batch_options)
+        batch = pipeline.Batch(aggregator.source_file, **batch_options)
         runs_before_run = self.read_file_contents(aggregator.run_file)
         batch.run()
         runs_after_run = self.read_file_contents(aggregator.run_file)

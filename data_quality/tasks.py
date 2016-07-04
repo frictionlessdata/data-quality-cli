@@ -17,9 +17,10 @@ import re
 import json
 import dateutil
 import importlib
+import jsontableschema
 from runpy import run_path
 from pydoc import locate
-from . import compat, exceptions, generators
+from . import compat, exceptions, generators, utilities
 
 @contextlib.contextmanager
 def cd(path):
@@ -41,12 +42,13 @@ class Task(object):
         self.data_dir = self.config['data_dir']
         self.result_file = os.path.join(self.data_dir, self.config['result_file'])
         self.run_file = os.path.join(self.data_dir, self.config['run_file'])
-        self.sources_file = os.path.join(self.data_dir, self.config['source_file'])
+        self.source_file = os.path.join(self.data_dir, self.config['source_file'])
         self.performance_file = os.path.join(self.data_dir,
                                              self.config['performance_file'])
         self.publishers_file = os.path.join(self.data_dir,
-                                             self.config['publisher_file'])
+                                            self.config['publisher_file'])
         self.cache_dir = self.config['cache_dir']
+        self.datapackage = utilities.get_default_datapackage()
         self.all_scores = []
 
 
@@ -59,34 +61,39 @@ class Aggregator(Task):
         super(Aggregator, self).__init__(*args, **kwargs)
         self.max_score = 10
         self.lookup = self.get_lookup()
-        self.run_schema = ['id', 'timestamp', 'total_score']
-        self.result_schema = ['id', 'source_id', 'publisher_id', 'period_id',
-                              'score', 'data', 'schema', 'summary', 'run_id',
-                              'timestamp', 'report']
-        self.run_id = uuid.uuid4().hex
-        self.timestamp = datetime.datetime.now(pytz.utc).isoformat()
+        run_resource = utilities.get_resource_by_name('run_file',
+                                                      self.datapackage)
+        result_resource = utilities.get_resource_by_name('result_file',
+                                                         self.datapackage)
+        self.run_schema = jsontableschema.model.SchemaModel(run_resource.metadata['schema'])
+        self.result_schema = jsontableschema.model.SchemaModel(result_resource.metadata['schema'])
+        self.run_id = compat.str(uuid.uuid4().hex)
+        self.timestamp = datetime.datetime.now(pytz.utc)
 
-        self.initialize_file(self.result_file, self.result_schema)
-        self.initialize_file(self.run_file, self.run_schema)
+        self.initialize_file(self.result_file, self.result_schema.headers)
+        self.initialize_file(self.run_file, self.run_schema.headers)
 
     def run(self, pipeline):
         """Run on a Pipeline instance."""
 
         with compat.UnicodeAppender(self.result_file, quoting=csv.QUOTE_MINIMAL) as result_file:
             source = self.get_source(pipeline.data_source)
-            result_id = uuid.uuid4().hex
+            result_id = compat.str(uuid.uuid4().hex)
             period_id = source['period_id']
-            score = compat.str(self.get_pipeline_score(pipeline))
+            score = self.get_pipeline_score(pipeline)
             data_source = pipeline.data_source
             schema = ''
             summary = '' # TODO: how/what should a summary be?
             report = self.get_pipeline_report_url(pipeline)
 
             result = [result_id, source['id'], source['publisher_id'],
-                                   period_id, score, data_source, schema,
-                                   summary, self.run_id, self.timestamp, report]
-
-            result_file.writerow(result)
+                      period_id, data_source, schema, score, summary,
+                      self.run_id, self.timestamp, report]
+            try:
+                result_file.writerow(list(self.result_schema.convert_row(*result)))
+            except jsontableschema.exceptions.MultipleInvalid as e:
+                for error in e.errors:
+                    raise error
 
             if pipeline.data:
                 self.fetch_data(pipeline.data.stream, pipeline.data.encoding, source)
@@ -97,7 +104,7 @@ class Aggregator(Task):
         _keys = ['id', 'publisher_id', data_key , 'period_id']
         lookup = []
 
-        with compat.UnicodeDictReader(self.sources_file) as sources_file:
+        with compat.UnicodeDictReader(self.source_file) as sources_file:
             for row in sources_file:
                 lookup.append({k: v for k, v in row.items() if k in _keys})
 
@@ -161,8 +168,12 @@ class Aggregator(Task):
         """Write this run in the run file."""
 
         with compat.UnicodeAppender(self.run_file, quoting=csv.QUOTE_MINIMAL) as run_file:
-            entry = [self.run_id, self.timestamp, str(int(sum(self.all_scores) / len(self.lookup)))]
-            run_file.writerow(entry)
+            entry = [self.run_id, self.timestamp, int(round(sum(self.all_scores) / len(self.lookup)))]
+            try:
+                run_file.writerow(list(self.run_schema.convert_row(*entry)))
+            except jsontableschema.exceptions.MultipleInvalid as e:
+                for error in e.errors:
+                    raise error
 
         return True
 
@@ -191,11 +202,12 @@ class AssessPerformance(Task):
         """Write the performance for all publishers."""
 
         publisher_ids = self.get_publishers()
-        fieldnames = ['publisher_id', 'period_id', 'files_count', 'score', 'valid',
-                      'files_count_to_date', 'score_to_date', 'valid_to_date']
+        performance_resource = utilities.get_resource_by_name('performance_file',
+                                                              self.datapackage)
+        performance_schema = jsontableschema.model.SchemaModel(performance_resource.metadata['schema'])
 
-        with compat.UnicodeDictWriter(self.performance_file, fieldnames) as performance_file:
-            performance_file.writeheader()
+        with compat.UnicodeWriter(self.performance_file) as performance_file:
+            performance_file.writerow(performance_schema.headers)
             available_periods = []
 
             for publisher_id in publisher_ids:
@@ -214,12 +226,24 @@ class AssessPerformance(Task):
                 publishers_performances += performances
                 all_sources += sources
                 for performance in performances:
-                    performance_file.writerow(performance)
+                    try:
+                        values = [performance[key] for key in performance_schema.headers]
+                        row = list(performance_schema.convert_row(*values))
+                        performance_file.writerow(row)
+                    except jsontableschema.exceptions.MultipleInvalid as e:
+                        for error in e.errors:
+                            raise error
 
             all_performances = self.get_periods_data('all', all_periods, all_sources)
 
             for performance in all_performances:
-                performance_file.writerow(performance)
+                try:
+                    values = [performance[key] for key in performance_schema.headers]
+                    row = list(performance_schema.convert_row(*values))
+                    performance_file.writerow(row)
+                except jsontableschema.exceptions.MultipleInvalid as e:
+                    for error in e.errors:
+                        raise error
 
     def get_publishers(self):
         """Return list of publishers ids."""
@@ -236,7 +260,7 @@ class AssessPerformance(Task):
 
         sources = []
 
-        with compat.UnicodeDictReader(self.sources_file) as sources_file:
+        with compat.UnicodeDictReader(self.source_file) as sources_file:
             for row in sources_file:
                 source = {}
                 if row['publisher_id'] == publisher_id:
@@ -299,7 +323,7 @@ class AssessPerformance(Task):
             period_sources_to_date += period_sources
             performance = {}
             performance['publisher_id'] = publisher_id
-            performance['period_id'] = period
+            performance['period_id'] = compat.str(period)
             performance['files_count'] = len(period_sources)
             performance['score'] = self.get_period_score(period_sources)
             performance['valid'] = self.get_period_valid(period_sources)
@@ -454,17 +478,14 @@ class Deploy(Task):
 
     def update_last_modified(self):
 
-        instance_file = os.path.join(self.config['data_dir'], 'instance.json')
-        instance_metadata = {}
-        if os.path.lexists(instance_file):
-            with io.open(instance_file, mode='r', encoding='utf-8') as instance:
-                instance_metadata = json.loads(instance.read())
+        user_datapkg, user_datapkg_path = utilities.load_json_datapackage(self.config)
+        datapkg_metadata = user_datapkg.metadata
 
-            with io.open(instance_file, mode='w+', encoding='utf-8') as instance:
-                current_time = strftime("%Y-%m-%d %H:%M:%S %Z", gmtime())
-                instance_metadata['last_modified'] = current_time
-                updated_json = json.dumps(instance_metadata, indent=4)
-                instance.write(compat.str(updated_json))
+        with io.open(user_datapkg_path, mode='w+', encoding='utf-8') as datapkg:
+            current_time = strftime("%Y-%m-%d %H:%M:%S %Z", gmtime())
+            datapkg_metadata['last_modified'] = current_time
+            updated_json = json.dumps(datapkg_metadata, indent=4)
+            datapkg.write(compat.str(updated_json))
 
 class Generate(Task):
 
@@ -492,7 +513,8 @@ class Generate(Task):
             except ValueError:
                 raise ValueError(('The path you provided for the generator class is '
                                   'not valid. Should be of type `mymodule.MyGenerator`'))
-        generator = generator_class(endpoint)
+        generated_datapkg, datapkg_path = utilities.load_json_datapackage(self.config)
+        generator = generator_class(endpoint, self.datapackage)
         generator.generate_publishers(self.publishers_file)
-        generator.generate_sources(self.sources_file, file_types=file_types)
+        generator.generate_sources(self.source_file, file_types=file_types)
         return generator
