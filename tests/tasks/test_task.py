@@ -7,16 +7,13 @@ from __future__ import unicode_literals
 import unittest
 import os
 from data_quality import utilities
-import datapackage
 
-class TestUtilities(unittest.TestCase):
+class TestTask(unittest.TestCase):
+    """Base class for task tests"""
+    
+    def setUp(self):
+        """Load the fixture config"""
 
-    def test_that_config_is_correctly_loaded(self):
         config_filepath = os.path.join('tests', 'fixtures', 'dq.json')
         config = utilities.load_json_config(config_filepath)
-        self.assertTrue(os.path.isabs(config['data_dir']))
-
-    def test_default_datapackage_loaded(self):
-        datapackage = utilities.get_default_datapackage()
-        self.assertGreater(len(datapackage.resources), 0)
-
+        self.config = config

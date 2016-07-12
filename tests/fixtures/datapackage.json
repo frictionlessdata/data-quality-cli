@@ -1,0 +1,274 @@
+{
+    "name": "",
+    "last_modified": "",
+    "validator_url": "https://goodtables.okfnlabs.org/api/run",
+    "admin": "",
+    "pitch": "",
+    "context": "",
+    "sources": [{"name": "", "web": ""}],
+    "resources": [
+        {
+           "path": "publishers.csv",
+           "name": "publisher_file",
+           "schema": {
+                "fields": [
+                  {
+                    "name": "id",
+                    "title": "ID of the publisher",
+                    "type": "string",
+                    "constraints": { "required": true, "unique": true }
+                  },
+                  {
+                    "name": "title",
+                    "title": "Title or official name of the publisher",
+                    "type": "string",
+                    "constraints": { "required": true, "unique": true }
+                  }
+                ],
+                "primaryKey": "id"
+            }
+        },
+        {
+            "path": "sources.csv",
+            "name": "source_file",
+            "schema": {
+                "fields": [
+                    {
+                        "name": "id",
+                        "title": "ID of the source",
+                        "type": "string",
+                        "constraints": { "required": true, "unique": true }
+                    },
+                    {
+                        "name": "publisher_id",
+                        "title": "ID of the source's publisher",
+                        "type": "string",
+                        "constraints": { "required": true, "unique": true }
+                    },
+                    {
+                        "name": "title",
+                        "title": "Title of the source",
+                        "type": "string",
+                        "constraints": { "required": true }
+                    },
+                    {
+                        "name": "data",
+                        "title": "Path/url to source",
+                        "type": "string",
+                        "constraints": { "required": true }
+                    },
+                    {
+                        "name": "format",
+                        "title": "File format of the source",
+                        "type": "string"
+                    },
+                    {
+                        "name": "period_id",
+                        "title": "Time covered by the source / of its creation",
+                        "type": "string",
+                        "constraints": { "required": true }
+                    }
+                ],
+                "primaryKey": "id",
+                "foreignKeys": [
+                    {
+                        "fields": "publisher_id",
+                        "reference": {
+                            "resource": "publisher_file",
+                            "fields": "id"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "path": "runs.csv",
+            "name": "run_file",
+            "schema": {
+                "fields": [
+                    {
+                        "name": "id",
+                        "title": "ID of the run",
+                        "type": "string",
+                        "constraints": { "required": true, "unique": true }
+                    },
+                    {
+                        "name": "timestamp",
+                        "title": "Timestamp of the run execution",
+                        "type": "date",
+                        "format": "datetime",
+                        "constraints": { "required": true }
+                    },
+                    {
+                        "name": "total_score",
+                        "title": "Rounded average score of results in this run",
+                        "type": "integer",
+                        "constraints": { "required": true}
+                    }
+                ],
+                "primaryKey": "id"
+            }
+        },
+        {
+            "path": "results.csv",
+            "name": "result_file",
+            "schema": {
+                "fields": [
+                   {
+                        "name": "id",
+                        "title": "ID of the result",
+                        "type": "string",
+                        "constraints": { "required": true, "unique": true }
+                    },
+                    {
+                        "name": "source_id",
+                        "title": "ID of the correspoding source",
+                        "type": "string",
+                        "constraints": { "required": true, "unique": true }
+                    },
+                    {
+                        "name": "publisher_id",
+                        "title": "ID of the source's publisher",
+                        "type": "string",
+                        "constraints": { "required": true}
+                    },
+                    {
+                        "name": "period_id",
+                        "title": "Time covered by the source / of its creation",
+                        "type": "string",
+                        "constraints": { "required": true }
+                    },
+                    {
+                        "name": "data",
+                        "title": "Path/url to source",
+                        "type": "string",
+                        "constraints": { "required": true }
+                    },
+                    {
+                        "name": "schema",
+                        "title": "Path/url to the source's schema",
+                        "type": "string"
+                    },
+                    {
+                        "name": "score",
+                        "title": "Score of correctness given by GoodTables",
+                        "type": "integer",
+                        "contrains": { "required": true }
+                    },
+                    {
+                        "name": "summary",
+                        "title": "Summary",
+                        "type": "string"
+                    },
+                    {
+                        "name": "run_id",
+                        "title": "ID of the run in which the result was calculated",
+                        "type": "string",
+                        "constraints": { "required": true, "unique": true }
+                    },
+                    {
+                        "name": "timestamp",
+                        "title": "Timestamp of the run execution",
+                        "type": "date",
+                        "format": "datetime",
+                        "constraints": { "required": true }
+                    },
+                    {
+                        "name": "report",
+                        "title": "Path/url to the full GoodTabels report",
+                        "type": "string"
+                    }
+                ],
+                "primaryKey": "id",
+                "foreignKeys": [
+                    {
+                       "fields": "source_id",
+                       "reference": {
+                            "resource": "source_file",
+                            "fields": "id"
+                       }
+                    },
+                    {
+                       "fields": "publisher_id",
+                       "reference": {
+                            "resource": "publisher_file",
+                            "fields": "id"
+                       }
+                    },
+                    {
+                       "fields": "run_id",
+                       "reference": {
+                            "resource": "run_file",
+                            "fields": "id"
+                       }
+                    }
+                ]
+            }
+        },
+        {
+            "path": "performance.csv",
+            "name": "performance_file",
+            "schema": {
+                "fields": [
+                    {
+                        "name": "publisher_id",
+                        "title": "ID of the publisher",
+                        "type": "string",
+                        "constraints": { "required": true, "unique": true }
+                    },
+                    {
+                        "name": "period_id",
+                        "title": "ID of the period",
+                        "type": "string",
+                        "constraints": { "required": true }
+                    },
+                    {
+                        "name": "files_count",
+                        "title": "Number of files published by the publisher during period",
+                        "type": "integer",
+                        "constraints": { "required": true }
+                    },
+                    {
+                        "name": "score",
+                        "title": "Rounded average score of files published by the publisher during period",
+                        "type": "integer",
+                        "constraints": { "required": true }
+                    },
+                    {
+                        "name": "valid",
+                        "title": "Number of valid files published by the publisher during period",
+                        "type": "integer",
+                        "constraints": { "required": true }
+                    },
+                    {
+                        "name": "files_count_to_date",
+                        "title": "Number of files published by the publisher up to period",
+                        "type": "integer",
+                        "constraints": { "required": true }
+                    },
+                    {
+                        "name": "score_to_date",
+                        "title": "Rounded average score of files published by the publisher up to period",
+                        "type": "integer",
+                        "constraints": { "required": true }
+                    },
+                    {
+                        "name": "valid_to_date",
+                        "title": "Number of valid files published by the publisher up to period",
+                        "type": "integer",
+                        "constraints": { "required": true }
+                    }
+                ],
+                "foreignKeys": [
+                    {
+                        "fields": "publisher_id",
+                        "reference": {
+                            "resource": "publisher_file",
+                            "fields": "id"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

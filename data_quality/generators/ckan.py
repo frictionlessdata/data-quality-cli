@@ -23,14 +23,14 @@ class CkanGenerator(BaseGenerator):
 
         super(CkanGenerator, self).__init__(url, datapackage)
 
-    def generate_sources(self, sources_filepath, file_types=['csv','excel']):
+    def generate_sources(self, sources_filepath, file_types=['csv', 'excel']):
         """Generates sources_file from the url"""
 
         file_types = [ftype.lower() for ftype in file_types]
         results = self.get_sources()
         sources = []
-        source_resource = utilities.get_resource_by_name('source_file',
-                                                         self.datapackage)
+        source_resource = utilities.get_datapackage_resource(sources_filepath,
+                                                             self.datapackage)
         source_schema = jsontableschema.model.SchemaModel(source_resource.metadata['schema'])
         for result in results:
             sources += self.extract_sources(result, file_types)
@@ -86,15 +86,15 @@ class CkanGenerator(BaseGenerator):
         return resources
 
     def generate_publishers(self, publishers_filepath):
-        """Generates publishers_file from the url"""
+        """Generates publisher_file from the url"""
 
         results = self.get_publishers()
-        pub_resource = utilities.get_resource_by_name('publisher_file',
-                                                      self.datapackage)
+        pub_resource = utilities.get_datapackage_resource(publishers_filepath,
+                                                          self.datapackage)
         pub_schema = jsontableschema.model.SchemaModel(pub_resource.metadata['schema'])
 
         with compat.UnicodeWriter(publishers_filepath,
-                                      quoting=csv.QUOTE_MINIMAL) as pfile:
+                                  quoting=csv.QUOTE_MINIMAL) as pfile:
             pfile.writerow(pub_schema.headers)
             for result in results:
                 result = self.extract_publisher(result)
