@@ -1,3 +1,3 @@
-id,publisher_id,name,data,score,revision,schema,period_id,timestamp,format
+id,publisher_id,title,data,score,revision,schema,period_id,timestamp,format
 source1,xx_dept1,Source 1,https://raw.githubusercontent.com/okfn/tabular-validator/master/examples/valid.csv,8,1,,2015-01-01,2015-01-01,csv
 source2,xx_dept15,Source 15,https://raw.githubusercontent.com/okfn/goodtables/master/examples/april-to-may-12th-2010.xls,8,1,,2015-01-01,2015-01-01,excel

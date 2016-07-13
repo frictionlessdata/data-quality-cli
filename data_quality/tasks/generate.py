@@ -24,7 +24,6 @@ class GeneratorManager(Task):
 
     def run(self, generator_name, endpoint, generator_path, file_types, simulate=False):
         """Delegate the generation processes to the chosen generator
-
         Args:
             generator_name: Name of the generator (ex: ckan)
             endpoint: Url where the generator should get the data from
@@ -59,3 +58,23 @@ class GeneratorManager(Task):
 
         generator.generate_publishers(self.publisher_file)
         generator.generate_sources(self.source_file, file_types=file_types)
+
+    def update_datapackage_sources(self):
+        """Update the 'sources' property of datapackage with the new sources"""
+
+        datapackage_check = DataPackageChecker(self.config)
+        required_resources = [self.source_file, self.publisher_file]
+        datapackage_check.check_database_completeness(required_resources)
+        datapackage_check.run()
+        self.datapackage.metadata['sources'] = []
+        datapkg_path = os.path.join(self.datapackage.base_path, 'datapackage.json')
+
+        with compat.UnicodeDictReader(self.source_file) as sources_file:
+            for source in sources_file:
+                src_info = {'name': source['title'], 'web': source[self.data_key]}
+                self.datapackage.metadata['sources'].append(src_info)
+
+        with io.open(datapkg_path, mode='w+', encoding='utf-8') as datapkg_file:
+            new_datapkg = json.dumps(self.datapackage.to_dict(), indent=4,
+                                     sort_keys=True)
+            datapkg_file.write(compat.str(new_datapkg))

@@ -95,6 +95,7 @@ def generate(generator_name, endpoint, config_file_path, generator_class_path, f
 
     generator = tasks.GeneratorManager(config)
     generator.run(generator_name, endpoint, generator_class_path, file_types)
+    generator.update_datapackage_sources()
 
 
 @cli.command()
