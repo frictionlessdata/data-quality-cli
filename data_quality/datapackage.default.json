@@ -47,7 +47,7 @@
                     },
                     {
                         "name": "title",
-                        "title": "Title of the source",
+                        "title": "Title or name of the source",
                         "type": "string",
                         "constraints": { "required": true }
                     },

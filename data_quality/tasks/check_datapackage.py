@@ -15,8 +15,11 @@ class DataPackageChecker(Task):
 
     """A task runner to check that the data package is correct"""
 
-    def __init__(self, config):
+    def __init__(self, config, inflexible_resources=[]):
         super(DataPackageChecker, self).__init__(config)
+        self.inflexible_resources = ['run_file', 'result_file', 'performance_file']
+        self.inflexible_resources.extend(inflexible_resources)
+        self.inflexible_resources = set(inflexible_resources)
 
     def run(self):
         """Check user datapackage against default datapackage"""
@@ -32,21 +35,36 @@ class DataPackageChecker(Task):
     def check_resource_schema(self, default_resource, resource):
         """Check that user resource schema contains all the mandatory fields"""
 
-        inflexible_resources = ['run_file', 'result_file', 'performance_file']
-        if default_resource.metadata['name'] in inflexible_resources:
-            if default_resource.metadata['schema'] != resource.metadata['schema']:
-                raise ValueError(('The schema for "{0}" is not subject to'
-                                  'change').format(resource.local_data_path))
+        def get_uncustomizable_fields(schema):
+            uncustomizable = ['constraints', 'format', 'name', 'type']
+            field_filter = lambda field: {key: val for key, val in field.items()
+                                          if key in uncustomizable}
+            fields = [field_filter(field) for field in schema.fields]
+            fields = sorted(fields, key=lambda k: k['name'])
 
         resource_schema = SchemaModel(resource.metadata['schema'])
-        default_schema = SchemaModel(default_resource.metadata['schema'])
-        required_headers = set(default_schema.required_headers)
-        resource_headers = set(resource_schema.headers)
-        if not required_headers.issubset(resource_headers):
-            missing_headers = required_headers.difference(resource_headers)
-            msg = ('Fields {0} are needed for internal processing but are missing'
-                   'from {1}.').format(missing_headers, resource.local_data_path)
-            raise ValueError(msg)
+        default_schema_dict = default_resource.metadata['schema']
+        if default_resource.metadata['name'] == 'source_file':
+            for field in default_schema_dict['fields']:
+                if field['name'] == 'data':
+                    field['name'] = self.data_key
+        default_schema = SchemaModel(default_schema_dict)
+
+        if default_resource.metadata['name'] in self.inflexible_resources:
+            if get_uncustomizable_fields(default_schema) != \
+               get_uncustomizable_fields(resource_schema):
+                msg = ('The fields for "{0}" are not subject to'
+                       'change').format(resource.local_data_path)
+                raise ValueError(msg, resource.local_data_path)
+        else:
+            required_headers = set(default_schema.required_headers)
+            resource_headers = set(resource_schema.headers)
+            if not required_headers.issubset(resource_headers):
+                missing_headers = required_headers.difference(resource_headers)
+                msg = ('Fields [{0}] are needed for internal processing'
+                       'but are missing from {1}.'
+                       ).format(','.join(missing_headers), resource.local_data_path)
+                raise ValueError(msg, resource.local_data_path)
 
     def check_database_content(self):
         """Check that the database content is compliant with the datapackage"""
@@ -63,11 +81,12 @@ class DataPackageChecker(Task):
                     issues = [res['result_message'] for res in report.generate()['results']]
                     msg = ('The file {0} is not compliant with the schema '
                            'you declared for it in "datapackage.json".'
-                           'Errors: {1}').format(resource_path, ','.join(issues))
+                           'Errors: {1}'
+                          ).format(resource_path, ';'.join(issues))
                     raise ValueError(msg)
 
     def check_database_completeness(self, required_resources=None):
-        """Checks that 'required_resources', or all necessary ones exists in the database
+        """Checks that 'required_resources', or all necessary ones exist in the database
 
             Args:
                 required_resources: list of paths to required resources
@@ -77,5 +96,7 @@ class DataPackageChecker(Task):
         resources = required_resources or all_resources
         for resource_file in resources:
             if not os.path.exists(resource_file):
-                raise ValueError(('The file "{0}" is needed but it doesn\'t exist.'
-                                  'Please create it or use "dq generate".').format(resource_file))
+                msg = ('The file "{0}" is needed but it doesn\'t exist.'
+                       'Please create it or use "dq generate".'
+                      ).format(resource_file)
+                raise ValueError(msg)

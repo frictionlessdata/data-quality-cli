@@ -69,8 +69,7 @@ class Aggregator(Task):
 
     def get_lookup(self):
 
-        data_key = self.config['goodtables']['arguments']['batch']['data_key']
-        _keys = ['id', 'publisher_id', data_key, 'period_id']
+        _keys = ['id', 'publisher_id', self.data_key, 'period_id', 'title']
         lookup = []
 
         with compat.UnicodeDictReader(self.source_file) as sources_file:
@@ -94,8 +93,7 @@ class Aggregator(Task):
     def get_source(self, data_src):
         """Find the entry correspoding to data_src from sources file"""
 
-        data_key = self.config['goodtables']['arguments']['batch']['data_key']
-        matches = [match for match in self.lookup if match[data_key] == data_src]
+        matches = [match for match in self.lookup if match[self.data_key] == data_src]
 
         if len(matches) == 0:
             raise exceptions.SourceNotFoundError(source=data_src)
@@ -149,8 +147,7 @@ class Aggregator(Task):
     def fetch_data(self, data_stream, encoding, source):
         """Cache the data source in the /fetched directory"""
 
-        data_key = self.config['goodtables']['arguments']['batch']['data_key']
-        source_name = source.get('name', source[data_key].rsplit('/', 1)[-1])
+        source_name = source.get('name', source[self.data_key].rsplit('/', 1)[-1])
         cached_file_name = os.path.join(self.cache_dir, source_name)
         data_stream.seek(0)
 

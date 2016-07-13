@@ -92,10 +92,12 @@ class Deployer(Task):
     def update_last_modified(self):
         """Update the 'last_modified' field in datapackage.json"""
 
-        datapackage_path = os.path.join(self.datapackage.base_path, 'datapackage.json')
+        datapackage_path = os.path.join(self.datapackage.base_path,
+                                        'datapackage.json')
 
         with io.open(datapackage_path, mode='w+', encoding='utf-8') as datapkg_file:
             current_time = strftime("%Y-%m-%d %H:%M:%S %Z", gmtime())
             self.datapackage.metadata['last_modified'] = current_time
-            updated_json = json.dumps(self.datapackage, indent=4)
-            datapkg_file.write(compat.str(updated_json))
+            updated_datapkg = json.dumps(self.datapackage.to_dict(), indent=4,
+                                         sort_keys=True)
+            datapkg_file.write(compat.str(updated_datapkg))

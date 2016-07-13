@@ -4,8 +4,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
+import io
+import json
 import importlib
-from data_quality import generators, utilities
+from data_quality import generators, utilities, compat
 from .base_task import Task
 from .check_datapackage import DataPackageChecker
 
@@ -29,19 +32,17 @@ class GeneratorManager(Task):
             file_types: List of file types that should be included in sources
         """
 
-        if  generators._built_in_generators.get(generator_name, None):
-            default_datapkg = utilities.get_default_datapackage()
-            default_resources = [res for res in default_datapkg.resources
-                                 if res.metadata['name'] in ['source_file', 'publisher_file']]
-            user_resources = [utilities.get_datapackage_resource(path, self.datapackage)
-                              for path in [self.publisher_file, self.source_file]]
-            for default_resource, resource in zip(default_resources, user_resources):
-                if default_resource.metadata['schema'] != resource.metadata['schema']:
-                    msg = ('Looks like you have a custom schema for "{0}". Generator '
-                           '"{1}" only works with the default schema. Please use '
-                           'a custom generator or match your schema to the default one.'
-                          ).format(default_resource.metadata['name'], generator_name)
-                    raise ValueError(msg)
+        if generators._built_in_generators.get(generator_name, None):
+            inflexible_resources = ['source_file', 'publisher_file']
+            datapackage_check = DataPackageChecker(self.config, inflexible_resources)
+            try:
+                datapackage_check.run()
+            except ValueError as e:
+                msg = ('Looks like you have a custom schema for "{0}". Generator '
+                       '"{1}" only works with the default schema. Please use a '
+                       'custom generator or match your schema to the default one.'
+                      ).format(e[1], generator_name)
+                raise ValueError(msg)
 
             generator_class = generators._built_in_generators[generator_name]
         else:
@@ -58,4 +59,3 @@ class GeneratorManager(Task):
 
         generator.generate_publishers(self.publisher_file)
         generator.generate_sources(self.source_file, file_types=file_types)
-

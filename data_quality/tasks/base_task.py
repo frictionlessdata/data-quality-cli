@@ -25,7 +25,7 @@ class Task(object):
         self.publisher_file = os.path.join(self.data_dir,
                                            self.config['publisher_file'])
         self.cache_dir = self.config['cache_dir']
-
+        self.data_key = self.config['goodtables']['arguments']['batch']['data_key']
         datapkg_file_path = self.config.get('datapackage_file', 'datapackage.json')
         if not os.path.isabs(datapkg_file_path):
             datapkg_file_path = os.path.join(os.path.dirname(self.data_dir),
@@ -34,5 +34,6 @@ class Task(object):
             self.datapackage = datapackage.DataPackage(datapkg_file_path)
         except datapackage.exceptions.DataPackageException as e:
             raise ValueError(('A datapackage couldn\'t be created because of the '
-                              'following error: "{0}". Consider using "dq init"').format(e))
+                              'following error: "{0}". Make sure the file is not '
+                              'empty and use "dq init" command.').format(e))
         self.all_scores = []
