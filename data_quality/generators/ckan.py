@@ -31,7 +31,7 @@ class CkanGenerator(BaseGenerator):
         sources = []
         source_resource = utilities.get_datapackage_resource(sources_filepath,
                                                              self.datapackage)
-        source_schema = jsontableschema.model.SchemaModel(source_resource.metadata['schema'])
+        source_schema = jsontableschema.model.SchemaModel(source_resource.descriptor['schema'])
         for result in results:
             sources += self.extract_sources(result, file_types)
 
@@ -91,7 +91,7 @@ class CkanGenerator(BaseGenerator):
         results = self.get_publishers()
         pub_resource = utilities.get_datapackage_resource(publishers_filepath,
                                                           self.datapackage)
-        pub_schema = jsontableschema.model.SchemaModel(pub_resource.metadata['schema'])
+        pub_schema = jsontableschema.model.SchemaModel(pub_resource.descriptor['schema'])
 
         with compat.UnicodeWriter(publishers_filepath,
                                   quoting=csv.QUOTE_MINIMAL) as pfile:

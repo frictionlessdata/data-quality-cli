@@ -27,7 +27,7 @@ class DataPackageChecker(Task):
         default_datapkg = utilities.get_default_datapackage()
         for default_resource in default_datapkg.resources:
             resource_path = os.path.join(self.config['data_dir'],
-                                         self.config[default_resource.metadata['name']])
+                                         self.config[default_resource.descriptor['name']])
             resource = utilities.get_datapackage_resource(resource_path,
                                                           self.datapackage)
             self.check_resource_schema(default_resource, resource)
@@ -42,15 +42,15 @@ class DataPackageChecker(Task):
             fields = [field_filter(field) for field in schema.fields]
             fields = sorted(fields, key=lambda k: k['name'])
 
-        resource_schema = SchemaModel(resource.metadata['schema'])
-        default_schema_dict = default_resource.metadata['schema']
-        if default_resource.metadata['name'] == 'source_file':
+        resource_schema = SchemaModel(resource.descriptor['schema'])
+        default_schema_dict = default_resource.descriptor['schema']
+        if default_resource.descriptor['name'] == 'source_file':
             for field in default_schema_dict['fields']:
                 if field['name'] == 'data':
                     field['name'] = self.data_key
         default_schema = SchemaModel(default_schema_dict)
 
-        if default_resource.metadata['name'] in self.inflexible_resources:
+        if default_resource.descriptor['name'] in self.inflexible_resources:
             if get_uncustomizable_fields(default_schema) != \
                get_uncustomizable_fields(resource_schema):
                 msg = ('The fields for "{0}" are not subject to'
@@ -73,7 +73,7 @@ class DataPackageChecker(Task):
         for resource in self.datapackage.resources:
             resource_path = resource.local_data_path
             if os.path.exists(resource_path):
-                options = {'schema': {'schema': resource.metadata['schema']}}
+                options = {'schema': {'schema': resource.descriptor['schema']}}
                 pipe = pipeline.Pipeline(resource_path, processors=['schema'],
                                                  options=options)
                 result, report = pipe.run()

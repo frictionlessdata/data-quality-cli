@@ -66,13 +66,13 @@ class GeneratorManager(Task):
         required_resources = [self.source_file, self.publisher_file]
         datapackage_check.check_database_completeness(required_resources)
         datapackage_check.run()
-        self.datapackage.metadata['sources'] = []
+        self.datapackage.descriptor['sources'] = []
         datapkg_path = os.path.join(self.datapackage.base_path, 'datapackage.json')
 
         with compat.UnicodeDictReader(self.source_file) as sources_file:
             for source in sources_file:
                 src_info = {'name': source['title'], 'web': source[self.data_key]}
-                self.datapackage.metadata['sources'].append(src_info)
+                self.datapackage.descriptor['sources'].append(src_info)
 
         with io.open(datapkg_path, mode='w+', encoding='utf-8') as datapkg_file:
             new_datapkg = json.dumps(self.datapackage.to_dict(), indent=4,

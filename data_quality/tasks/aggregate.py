@@ -30,8 +30,8 @@ class Aggregator(Task):
                                                           self.datapackage)
         result_resource = utilities.get_datapackage_resource(self.result_file,
                                                              self.datapackage)
-        self.run_schema = jsontableschema.model.SchemaModel(run_resource.metadata['schema'])
-        self.result_schema = jsontableschema.model.SchemaModel(result_resource.metadata['schema'])
+        self.run_schema = jsontableschema.model.SchemaModel(run_resource.descriptor['schema'])
+        self.result_schema = jsontableschema.model.SchemaModel(result_resource.descriptor['schema'])
         self.initialize_file(self.result_file, self.result_schema.headers)
         self.initialize_file(self.run_file, self.run_schema.headers)
         self.run_id = compat.str(uuid.uuid4().hex)

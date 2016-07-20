@@ -64,9 +64,9 @@ class DataPackageInitializer(object):
             with io.open(datapkg_file_path, mode='w+', encoding='utf-8') as new_datapkg:
                 default_datapkg = utilities.get_default_datapackage()
                 for resource in default_datapkg.resources:
-                    resource_path = config.get(resource.metadata['name'],
-                                               resource.metadata['path'])
-                    resource.metadata['path'] = os.path.join(config['data_dir'],
+                    resource_path = config.get(resource.descriptor['name'],
+                                               resource.descriptor['path'])
+                    resource.descriptor['path'] = os.path.join(config['data_dir'],
                                                              resource_path)
                 json_datapkg = json.dumps(default_datapkg.to_dict(), indent=4)
                 new_datapkg.write(compat.str(json_datapkg))

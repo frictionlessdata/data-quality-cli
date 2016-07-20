@@ -39,7 +39,7 @@ class TestGeneratorManagerTask(TestTask):
 
         def empty_datapackage_sources(datapkg_path, datapkg):
             with io.open(datapkg_path, mode='w+', encoding='utf-8') as datapkg_file:
-                datapkg.metadata['sources'] = []
+                datapkg.descriptor['sources'] = []
                 updated_json = json.dumps(datapkg.to_dict(), indent=4, sort_keys=True)
                 datapkg_file.write(compat.str(updated_json))
 
@@ -50,7 +50,7 @@ class TestGeneratorManagerTask(TestTask):
         generator.update_datapackage_sources()
         second_generator = tasks.GeneratorManager(self.config)
 
-        self.assertEquals(generator.datapackage.metadata['sources'],
-                          second_generator.datapackage.metadata['sources'])
-        self.assertGreater(len(generator.datapackage.metadata['sources']), 0)
+        self.assertEquals(generator.datapackage.descriptor['sources'],
+                          second_generator.datapackage.descriptor['sources'])
+        self.assertGreater(len(generator.datapackage.descriptor['sources']), 0)
         empty_datapackage_sources(datapkg_path, generator.datapackage)

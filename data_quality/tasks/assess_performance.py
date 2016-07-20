@@ -33,7 +33,7 @@ class PerformanceAssessor(Task):
         publisher_ids = self.get_publishers()
         performance_resource = utilities.get_datapackage_resource(self.performance_file,
                                                                   self.datapackage)
-        performance_schema = jsontableschema.model.SchemaModel(performance_resource.metadata['schema'])
+        performance_schema = jsontableschema.model.SchemaModel(performance_resource.descriptor['schema'])
 
         with compat.UnicodeWriter(self.performance_file) as performance_file:
             performance_file.writerow(performance_schema.headers)

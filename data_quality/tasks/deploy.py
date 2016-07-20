@@ -97,7 +97,7 @@ class Deployer(Task):
 
         with io.open(datapackage_path, mode='w+', encoding='utf-8') as datapkg_file:
             current_time = strftime("%Y-%m-%d %H:%M:%S %Z", gmtime())
-            self.datapackage.metadata['last_modified'] = current_time
+            self.datapackage.descriptor['last_modified'] = current_time
             updated_datapkg = json.dumps(self.datapackage.to_dict(), indent=4,
                                          sort_keys=True)
             datapkg_file.write(compat.str(updated_datapkg))
