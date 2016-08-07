@@ -20,3 +20,11 @@ class DuplicateDataSourceError(Exception):
                        in \'source_file\''.format(source)
         self.msg = msg or default_msg
         super(DuplicateDataSourceError, self).__init__(msg)
+
+class UnableToAssessTimeliness(Exception):
+
+    def __init__(self, msg=None):
+        default_msg = 'Timeliness cannot be assessed.'
+        self.msg = msg or default_msg
+        super(UnableToAssessTimeliness, self).__init__(msg)
+

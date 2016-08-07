@@ -54,25 +54,14 @@ class PerformanceAssessor(Task):
                                                      sources)
                 publishers_performances += performances
                 all_sources += sources
-                for performance in performances:
-                    try:
-                        values = [performance[key] for key in performance_schema.headers]
-                        row = list(performance_schema.convert_row(*values))
-                        performance_file.writerow(row)
-                    except jsontableschema.exceptions.MultipleInvalid as e:
-                        for error in e.errors:
-                            raise error
+                for row in utilities.dicts_to_schema_rows(performances,
+                                                          performance_schema):
+                    performance_file.writerow(row)
 
             all_performances = self.get_periods_data('all', all_periods, all_sources)
-
-            for performance in all_performances:
-                try:
-                    values = [performance[key] for key in performance_schema.headers]
-                    row = list(performance_schema.convert_row(*values))
-                    performance_file.writerow(row)
-                except jsontableschema.exceptions.MultipleInvalid as e:
-                    for error in e.errors:
-                        raise error
+            for row in utilities.dicts_to_schema_rows(all_performances,
+                                                      performance_schema):
+                performance_file.writerow(row)
 
     def get_publishers(self):
         """Return list of publishers ids."""
@@ -94,7 +83,7 @@ class PerformanceAssessor(Task):
                 source = {}
                 if row['publisher_id'] == publisher_id:
                     source['id'] = row['id']
-                    source['period_id'] = self.get_period(row['period_id'])
+                    source['created_at'] = utilities.date_from_string(row['created_at'])
                     source['score'] = self.get_source_score(source['id'])
                     sources.append(source)
         return sources
@@ -115,24 +104,8 @@ class PerformanceAssessor(Task):
                     timestamp = dateutil.parser.parse(row['timestamp'])
                     if timestamp > latest_timestamp:
                         latest_timestamp = timestamp
-                        score = int(row['score']) * 10
+                        score = int(row['score'])
         return score
-
-    def get_period(self, period):
-        """Return a valid period as date object
-
-        Args:
-            period: a string that might contain a date or range of dates
-
-        """
-
-        if not period:
-            return ''
-        try:
-            date_object = dateutil.parser.parse(period).date()
-            return date_object
-        except ValueError:
-            return ''
 
     def get_periods_data(self, publisher_id, periods, sources):
         """Return list of performances for a publisher, by period.
@@ -152,7 +125,7 @@ class PerformanceAssessor(Task):
             period_sources_to_date += period_sources
             performance = {}
             performance['publisher_id'] = publisher_id
-            performance['period_id'] = compat.str(period)
+            performance['month_of_creation'] = compat.str(period)
             performance['files_count'] = len(period_sources)
             performance['score'] = self.get_period_score(period_sources)
             performance['valid'] = self.get_period_valid(period_sources)
@@ -174,7 +147,7 @@ class PerformanceAssessor(Task):
         period_sources = []
 
         for source in sources:
-            if period == source['period_id']:
+            if period == source['created_at'].replace(day=1):
                 period_sources.append(source)
         return period_sources
 
@@ -221,7 +194,7 @@ class PerformanceAssessor(Task):
 
         periods = []
         for source in sources:
-            periods.append(source['period_id'])
+            periods.append(source['created_at'])
         periods = list(set(periods))
         return periods
 
@@ -234,6 +207,7 @@ class PerformanceAssessor(Task):
         """
 
         oldest_date = sorted(periods)[0]
+        oldest_date = oldest_date.replace(day=1)
         current_date = datetime.date.today()
         delta = dateutil.relativedelta.relativedelta(months=1)
         relative_date = oldest_date

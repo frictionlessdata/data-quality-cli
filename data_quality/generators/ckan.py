@@ -78,7 +78,7 @@ class CkanGenerator(BaseGenerator):
                 publisher = datum.get('organization', {})
                 new_resource['publisher_id'] = publisher.get('name')
                 new_resource['id'] = resource['id']
-                new_resource['period_id'] = resource['created']
+                new_resource['created_at'] = resource['created']
                 title = datum.get('title', '')
                 name = resource.get('name', '')
                 new_resource['title'] = ' / '.join(val for val in [title, name] if val)

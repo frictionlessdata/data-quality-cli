@@ -57,7 +57,7 @@
                         "type": "string"
                     },
                     {
-                        "name": "period_id",
+                        "name": "created_at",
                         "title": "Time covered by the source / of its creation",
                         "type": "string",
                         "constraints": { "required": true }
@@ -127,9 +127,10 @@
                         "constraints": { "required": true}
                     },
                     {
-                        "name": "period_id",
+                        "name": "created_at",
                         "title": "Time covered by the source / of its creation",
-                        "type": "string",
+                        "type": "date",
+                        "format": "date",
                         "constraints": { "required": true }
                     },
                     {

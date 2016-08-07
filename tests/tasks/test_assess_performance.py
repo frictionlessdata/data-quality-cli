@@ -28,7 +28,7 @@ class TestPerformanceAssessorTask(TestTask):
         assess_performance_task.run()
         test_dict = {'files_count_to_date': '1', 'valid_to_date': '100',
                      'score_to_date': '100', 'score': '100',
-                     'period_id': '2015-01-01', 'publisher_id': 'xx_dept1',
+                     'month_of_creation': '2015-01-01', 'publisher_id': 'xx_dept1',
                      'valid': '100', 'files_count': '1'}
         with compat.UnicodeDictReader(assess_performance_task.performance_file) as pf:
             self.assertGreater(self.find_in_sequence(pf, test_dict), -1)

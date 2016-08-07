@@ -34,7 +34,7 @@
         },
         {
             "name": "source_file",
-            "path": "sources.csv",
+            "path": "sources_with_period_id.csv",
             "schema": {
                 "fields": [
                     {
@@ -167,10 +167,10 @@
                         "constraints": {
                             "required": true
                         },
-                        "format": "date",
                         "name": "created_at",
                         "title": "Time of the source's creation.",
-                        "type": "date"
+                        "type": "date",
+                        "format": "date"
                     },
                     {
                         "constraints": {
@@ -263,13 +263,11 @@
                         "type": "string"
                     },
                     {
-                        "constraints": {
-                            "required": true
-                        },
-                        "format": "date",
                         "name": "month_of_creation",
                         "title": "Month when the source was created",
-                        "type": "date"
+                        "type": "date",
+                        "format": "date",
+                        "constraints": { "required": true }
                     },
                     {
                         "constraints": {

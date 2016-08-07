@@ -9,6 +9,11 @@
     "datapackage_file": "datapackage.json",
     "remotes": ["origin"],
     "branch": "master",
+    "assess_timeliness": false,
+    "timeliness":{},
+    "data_quality_spec": {
+        "data_quality_spec_web": "https://raw.githubusercontent.com/frictionlessdata/data-quality-spec/master/spec.json"
+    },
     "goodtables": {
         "goodtables_web": "http://goodtables.okfnlabs.org",
         "arguments": {

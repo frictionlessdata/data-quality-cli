@@ -159,9 +159,30 @@ dq deploy /path/to/config.json
   "remotes": ["origin"],
   "branch": "master",
   
-  #name and path to custom generator (this name should be used when executing the generate command)
+  # name and path to custom generator (this name should be used when executing the generate command)
   "generator": {"my_generator_name": "my_module.MyGenerator" },
-
+  
+  # whether or not to include timeliness as a dimension of quality assessment
+  "assess_timeliness": false,
+  
+  # timeliness options:
+  "timeliness": {
+    
+    # columns from source_file that should be checked for period detection
+    "timeliness_strategy": ["column1", "column2"],
+    
+    # whether Data Quality CLI should detect period or expect it to be provided
+    "extract_period": false,
+    
+    # maximum percent of sources with empty period allowed
+    "max_empty_relevance_period": 10,
+    
+    # when date is ambiguous, which order should be preffered
+    "date_order": "DMY",
+    
+    # how long after the period_id range is the data still considered timely (in months)
+    "timeliness_period": 1
+  }
   # options for GoodTables ("http://goodtables.readthedocs.org/en/latest/")
   "goodtables": {
 
@@ -231,6 +252,8 @@ dq deploy /path/to/config.json
     "performance_file": "performance.csv",
     "remotes": ["origin"],
     "branch": "master",
+    "assess_timeliness": false,
+    "timeliness":{},
     "goodtables": {
         "goodtables_web": "http://goodtables.okfnlabs.org",
         "arguments": {
@@ -311,6 +334,55 @@ of the column that contains it
   Lastly, [here is the less predictible version](https://uk-25k-inferred-schema.herokuapp.com/)
   that uses both `structure` and `schema`, but it compares files agaist inferred schemas (i.e. using `infer_schema: true`).Corresponding
   database repostory [here](https://github.com/georgiana-b/data-quality-uk-25k-spend/tree/uk-25k-spend-inferred-schema).
+
+##### Timeliness
+  An optional criteria for quality assessment is the timeliness of data publication.
+   We define timeliness as the difference in months between when the data source _should have been published_
+   and _when it was published_. If you want to include timeliness in the quality assessment
+   set `assess_timeliness: true`.
+
+  "When the data should have been published" is what we call `period_id` and reffers to
+   the period of time the data is relevant for. There are two options for providing `period_id`:
+
+  - You can provide it for each source and include the column name in the config:
+     `"timeliness": {"timeliness_strategy": ["column_name"]}`
+  - Let Data Quality CLI detect the period from certain fields in `source_file`
+     that are likely to contain it:
+
+      ```
+        "timeliness": {
+            "extract_period": true,
+            "timeliness_strategy": ["column1", "column2"]
+        }
+      ```
+
+    The order will tell Data Quality CLI which field has priority. In this example,
+     it will try to find something in `column1` and move to `column2` only if
+     nothing was found. You can specify as many fields as you want. Please note that
+     if the date is ambiguous, Data Quality CLI will prefer the format `dd-mm-yyyy`.
+     You can change that with the `date_order` option. For example,
+     `"timeliness": {"date_order": "MDY"}` will change the preffered order
+     to `mm-dd-yyyy`.
+
+  Regardless of the method you choose, Data Quality CLI will parse the fields you
+   provided in `timeliness_strategy`, try to extract a period out of them and write
+   it in the `source_file`.
+
+   NOTE: If you provide a `period_id` it will be parsed and replaced by one with
+   the same dates but a different format used thoughout the CLI.
+
+   If no `period_id` can be extracted for more than 10% of the sources, Data Quality CLI
+   will abort timeliness assessment and raise an error. If you want to change that,
+   set `max_empty_relevance_period` to the desired percent. If the precent of sources
+   laking `period_id` doesn't exceed `max_empty_relevance_period`, the value in the
+   `created_at` column will be used as `period_id` for them.
+
+  By default, a data source is considered timely if no more than a month has passed from
+   the end of `period_id` until it was published (`created_at`). You can change that with the
+   `timeliness_period` option by providing a different *number of months*.
+   Ex: `"timeliness": {"timeliness_period": 3}` means that the data source is timely
+   if no more than 3 months passed since the end of `period_id`.
+   The quality score will decrease for every additional month after the period considered timely.
 
 ### Schema
 

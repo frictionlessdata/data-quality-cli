@@ -25,6 +25,10 @@ def run(config_file_path, deploy, encoding):
     utilities.set_up_cache_dir(config['cache_dir'])
     source_filepath = os.path.join(config['data_dir'], config['source_file'])
 
+    if config['assess_timeliness'] is True:
+        extractor = tasks.extract_relevance_period.RelevancePeriodExtractor(config)
+        extractor.run()
+
     aggregator = tasks.Aggregator(config)
 
     if deploy:
