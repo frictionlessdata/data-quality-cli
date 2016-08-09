@@ -17,7 +17,8 @@
                 "encoding": "utf-8",
                 "options": {
                     "schema": {"case_insensitive_headers": true}
-                }
+                },
+                "break_on_invalid_processor": false
             },
             "batch": {
                 "format_key": "format",

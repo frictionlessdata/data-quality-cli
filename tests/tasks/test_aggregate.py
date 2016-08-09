@@ -79,30 +79,21 @@ class TestAggregatorTask(TestTask):
         score = int(result['score'])
         self.assertEqual(98, score)
 
-    def test_aggregate_scoring_affected_rows(self):
-        """Test Aggregator scoring based on affected_rows"""
+    def tests_aggreate_scoring(self):
+        """Test Aggregator scoring"""
 
-        self.config['scoring_algorithm'] = 2
         aggregator_task = tasks.Aggregator(self.config)
         url = 'https://raw.githubusercontent.com/frictionlessdata/goodtables/master/examples/empty_rows_multiple.csv'
+        schema = 'https://raw.githubusercontent.com/frictionlessdata/goodtables/master/examples/test_schema.json'
+        pipeline_options = self.config['goodtables']['arguments']['pipeline']
+        pipeline_options['options']['schema']['schema'] = schema
         pipeline_instance = pipeline.Pipeline(data=url, format='csv',
-                                              post_task=aggregator_task.run)
+                                              post_task=aggregator_task.run,
+                                              **pipeline_options)
         pipeline_instance.run()
         result = self.read_file_contents(aggregator_task.result_file)[-1]
 
         self.assertEqual(int(result['score']), 0)
-
-    def tests_aggreate_scoring_occurrences(self):
-        """Test Aggregator scoring based on error occurences"""
-
-        aggregator_task = tasks.Aggregator(self.config)
-        url = 'https://raw.githubusercontent.com/frictionlessdata/goodtables/master/examples/empty_rows_multiple.csv'
-        pipeline_instance = pipeline.Pipeline(data=url, format='csv',
-                                              post_task=aggregator_task.run)
-        pipeline_instance.run()
-        result = self.read_file_contents(aggregator_task.result_file)[-1]
-
-        self.assertEqual(int(result['score']), 67)
 
     def read_file_contents(self, file_name):
         """Return file contents as list of dicts"""

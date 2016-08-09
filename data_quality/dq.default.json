@@ -17,7 +17,9 @@
     "goodtables": {
         "goodtables_web": "http://goodtables.okfnlabs.org",
         "arguments": {
-            "pipeline": {},
+            "pipeline": {
+                "break_on_invalid_processor": false
+            },
             "batch": {
                 "data_key": "data"
             }

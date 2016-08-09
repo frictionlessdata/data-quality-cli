@@ -42,7 +42,6 @@ class Aggregator(Task):
         self.assess_timeliness = self.config['assess_timeliness']
         self.timeliness_period = self.config['timeliness'].get('timeliness_period', 1)
         self.max_score = 100
-        self.scoring_algorithm = self.config.get('scoring_algorithm', 1)
         required_resources = [self.result_file, self.source_file,
                               self.publisher_file, self.run_file]
         datapackage_check.check_database_completeness(required_resources)
@@ -153,20 +152,12 @@ class Aggregator(Task):
         score = self.max_score
         report = pipeline.report.generate()
         error_stats = self.get_error_stats(report)
-        total_no_rows = report['meta']['row_count']
         base_errors = {err: stats for err, stats in error_stats.items()
                        if stats['processor'] == 'base'}
         if base_errors:
             score = 0
         else:
-            if self.scoring_algorithm == 1:
-                score = self.score_by_error_occurences(error_stats)
-            elif self.scoring_algorithm == 2:
-                score = self.score_by_affected_rows(error_stats, total_no_rows+1)
-            else:
-                raise ValueError(('The only options for "scoring_algorithm" are'
-                                  ' 1 and 2.'))
-
+            score = self.score_by_error_occurences(error_stats)
             if self.assess_timeliness:
                 publication_delay = self.get_publication_delay(source)
                 score -= publication_delay
@@ -221,23 +212,6 @@ class Aggregator(Task):
                     error['occurrences'] += 1
                     error['rows'].append(result['row_index'])
         return error_stats
-
-    def score_by_affected_rows(self, error_stats, total_no_rows):
-        """Score data source based on percent of rows affected by each error.
-           Algorithm:`total score - (error weight * percent_of_affected_rows)`
-
-           Args:
-                error_stats: dict with stats on each error
-                total_no_rows: number of rows the data source has
-        """
-
-        score = self.max_score
-        for error, stats in error_stats.items():
-            affected_rows = len(set(stats['rows']))
-            affected_rows_percent = (affected_rows * 100) / total_no_rows
-            error_impact = stats['weight'] * affected_rows_percent
-            score -= error_impact
-        return score
 
     def score_by_error_occurences(self, error_stats):
         """Score data source based on based on number of occurrences of each error
