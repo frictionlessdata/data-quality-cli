@@ -56,8 +56,8 @@ class GeneratorManager(Task):
         if simulate:
             return generator
 
-        generator.generate_publishers(self.publisher_file)
         generator.generate_sources(self.source_file, file_types=file_types)
+        generator.generate_publishers(self.publisher_file)
 
     def update_datapackage_sources(self):
         """Update the 'sources' property of datapackage with the new sources"""

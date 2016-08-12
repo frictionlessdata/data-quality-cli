@@ -5,8 +5,8 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import csv
-import requests
 from os import path
+import requests
 import jsontableschema
 from data_quality import compat, utilities
 from .base import BaseGenerator
@@ -22,6 +22,7 @@ class CkanGenerator(BaseGenerator):
         """
 
         super(CkanGenerator, self).__init__(url, datapackage)
+        self.default_publisher = None
 
     def generate_sources(self, sources_filepath, file_types=['csv', 'excel']):
         """Generates sources_file from the url"""
@@ -55,13 +56,22 @@ class CkanGenerator(BaseGenerator):
         response.raise_for_status()
         data = response.json()
         count = data['result']['count']
-        all_data = []
+        all_packages = []
+        all_sources = []
         for start in range(0, count, 500):
             payload = {'rows': 500, 'start': start}
             response = requests.get(full_url, params=payload)
             data = response.json()
-            all_data += data['result']['results']
-        return all_data
+            all_packages += [result['id'] for result in  data['result']['results']]
+
+        for package_id in all_packages:
+            ext = 'api/3/action/package_show'
+            full_package_url = compat.urljoin(self.base_url, ext)
+            package_payload = {'use_default_schema': True, 'id': package_id}
+            response = requests.get(full_package_url, params=package_payload)
+            data = response.json()
+            all_sources.append(data['result'])
+        return all_sources
 
     def extract_sources(self, datum, file_types):
         """Extract all sources for one result"""
@@ -75,8 +85,13 @@ class CkanGenerator(BaseGenerator):
             file_types = ['excel' if ext in ['xls', 'xlsx'] else ext for ext in file_types]
             file_types.append('')
             if new_resource['format'] in file_types:
-                publisher = datum.get('organization', {})
-                new_resource['publisher_id'] = publisher.get('name')
+                publisher = datum.get('organization', None)
+                if publisher:
+                    new_resource['publisher_id'] = publisher.get('name')
+                else:
+                    self.default_publisher = {'name': 'no_organization',
+                                              'display_name': 'No Organization'}
+                    new_resource['publisher_id'] = self.default_publisher['name']
                 new_resource['id'] = resource['id']
                 new_resource['created_at'] = resource['created']
                 title = datum.get('title', '')
@@ -89,6 +104,8 @@ class CkanGenerator(BaseGenerator):
         """Generates publisher_file from the url"""
 
         results = self.get_publishers()
+        if self.default_publisher:
+            results.append(self.default_publisher)
         pub_resource = utilities.get_datapackage_resource(publishers_filepath,
                                                           self.datapackage)
         pub_schema = jsontableschema.model.SchemaModel(pub_resource.descriptor['schema'])
@@ -133,4 +150,3 @@ class CkanGenerator(BaseGenerator):
             if key == 'category':
                 publisher['type'] = extra.get('value')
         return publisher
-
