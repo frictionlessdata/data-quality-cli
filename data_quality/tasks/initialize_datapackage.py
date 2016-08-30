@@ -38,10 +38,6 @@ class DataPackageInitializer(object):
             config = utilities.load_json_config(init_config_path)
         else:
             config = utilities.load_json_config(None)
-            config['data_dir'] = utilities.resolve_dir_name(init_config_path,
-                                                            config['data_dir'])
-            config['cache_dir'] = utilities.resolve_dir_name(init_config_path,
-                                                             config['cache_dir'])
 
             with io.open(init_config_path, mode='w+', encoding='utf-8') as new_config:
                 new_json_config = json.dumps(config, indent=4, sort_keys=True)
@@ -55,9 +51,7 @@ class DataPackageInitializer(object):
 
         datapkg_file_path = config.get('datapackage_file', '')
         if not datapkg_file_path or not os.path.isabs(datapkg_file_path):
-            data_dir_path = os.path.normpath(config['data_dir'])
-            datapkg_dir_path = os.path.dirname(data_dir_path)
-            datapkg_file_path = os.path.join(datapkg_dir_path, 'datapackage.json')
+            datapkg_file_path = os.path.join(self.workspace_path, 'datapackage.json')
 
         datapkg_file_path = os.path.abspath(datapkg_file_path)
         if not os.path.exists(datapkg_file_path):
@@ -67,7 +61,7 @@ class DataPackageInitializer(object):
                     resource_path = config.get(resource.descriptor['name'],
                                                resource.descriptor['path'])
                     resource.descriptor['path'] = os.path.join(config['data_dir'],
-                                                             resource_path)
+                                                               resource_path)
                 json_datapkg = json.dumps(default_datapkg.to_dict(), indent=4)
                 new_datapkg.write(compat.str(json_datapkg))
                 print(('A new "datapackage.json" file has been created at {0}. '

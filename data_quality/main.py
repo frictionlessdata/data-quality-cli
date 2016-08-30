@@ -85,7 +85,9 @@ def generate(generator_name, endpoint, config_file_path, generator_class_path, f
     file_types = list(file_type)
     config = utilities.load_json_config(config_file_path)
     if not config_file_path:
-        config['data_dir'] = utilities.resolve_dir_name(os.getcwd(), config['data_dir'])
+        default_config_path = os.path.join(os.getcwd(), 'dq_config.json')
+        config['data_dir'] = utilities.resolve_dir_name(default_config_path,
+                                                        config['data_dir'])
     utilities.resolve_dir(config['data_dir'])
 
     if generator_name not in generators._built_in_generators.keys():
