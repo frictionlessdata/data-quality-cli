@@ -41,7 +41,7 @@ data is deployed, the app will start working with the updated data.
 ## Install
 
 ```
-pip install git+https://github.com/okfn/dataquality-cli.git#egg=dataquality
+pip install git+https://github.com/frictionlessdata/data-quality-cli.git
 ```
 
 ## Use
