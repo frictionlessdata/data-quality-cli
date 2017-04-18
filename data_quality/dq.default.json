@@ -12,7 +12,7 @@
     "assess_timeliness": false,
     "timeliness":{},
     "data_quality_spec": {
-        "data_quality_spec_web": "https://raw.githubusercontent.com/frictionlessdata/data-quality-spec/master/spec.json"
+        "data_quality_spec_web": "https://cdn.rawgit.com/frictionlessdata/data-quality-spec/4d7140394f2d46c5d66f91d4be2bb41477e5f583/spec.json"
     },
     "goodtables": {
         "goodtables_web": "http://goodtables.okfnlabs.org",

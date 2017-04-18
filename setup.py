@@ -17,8 +17,8 @@ def read(*paths):
 
 
 PACKAGE = 'data_quality'
-INSTALL_REQUIRES = ['click>=6.2', 'goodtables>=0.6.5', 'pytz', 'datapackage',
-                    'jsontableschema', 'dateparser']
+INSTALL_REQUIRES = ['click>=6.2,<=7.0.0a', 'goodtables==0.7.6', 'pytz==2017.2', 'datapackage==0.8.1',
+                    'jsontableschema==0.6.5', 'dateparser==0.4.0', 'tabulator==0.5.0']
 TESTS_REQUIRE = ['tox']
 README = read('README.md')
 VERSION = read(PACKAGE, 'VERSION')

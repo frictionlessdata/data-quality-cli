@@ -1,337 +1,337 @@
 {
-    "admin": "",
-    "context": "",
-    "last_modified": "",
-    "name": "",
-    "pitch": "",
+    "admin": "", 
+    "context": "", 
+    "last_modified": "", 
+    "name": "", 
+    "pitch": "", 
     "resources": [
         {
-            "name": "publisher_file",
-            "path": "publishers.csv",
+            "name": "publisher_file", 
+            "path": "publishers.csv", 
             "schema": {
                 "fields": [
                     {
                         "constraints": {
-                            "required": true,
+                            "required": true, 
                             "unique": true
-                        },
-                        "name": "id",
-                        "title": "ID of the publisher",
+                        }, 
+                        "name": "id", 
+                        "title": "ID of the publisher", 
                         "type": "string"
-                    },
+                    }, 
                     {
                         "constraints": {
-                            "required": true,
+                            "required": true, 
                             "unique": true
-                        },
-                        "name": "title",
-                        "title": "Title or official name of the publisher",
+                        }, 
+                        "name": "title", 
+                        "title": "Title or official name of the publisher", 
                         "type": "string"
                     }
-                ],
+                ], 
                 "primaryKey": "id"
             }
-        },
+        }, 
         {
-            "name": "source_file",
-            "path": "sources.csv",
+            "name": "source_file", 
+            "path": "sources.csv", 
             "schema": {
                 "fields": [
                     {
                         "constraints": {
-                            "required": true,
+                            "required": true, 
                             "unique": true
-                        },
-                        "name": "id",
-                        "title": "ID of the source",
+                        }, 
+                        "name": "id", 
+                        "title": "ID of the source", 
                         "type": "string"
-                    },
+                    }, 
                     {
                         "constraints": {
-                            "required": true,
+                            "required": true, 
                             "unique": true
-                        },
-                        "name": "publisher_id",
-                        "title": "ID of the source's publisher",
+                        }, 
+                        "name": "publisher_id", 
+                        "title": "ID of the source's publisher", 
                         "type": "string"
-                    },
+                    }, 
                     {
                         "constraints": {
                             "required": true
-                        },
-                        "name": "title",
-                        "title": "Title of the source",
+                        }, 
+                        "name": "title", 
+                        "title": "Title of the source", 
                         "type": "string"
-                    },
+                    }, 
                     {
                         "constraints": {
                             "required": true
-                        },
-                        "name": "data",
-                        "title": "Path/url to source",
+                        }, 
+                        "name": "data", 
+                        "title": "Path/url to source", 
                         "type": "string"
-                    },
+                    }, 
                     {
-                        "name": "format",
-                        "title": "File format of the source",
+                        "name": "format", 
+                        "title": "File format of the source", 
                         "type": "string"
-                    },
+                    }, 
                     {
                         "constraints": {
                             "required": true
-                        },
-                        "name": "created_at",
-                        "title": "Time of the source's creation.",
+                        }, 
+                        "name": "created_at", 
+                        "title": "Time of the source's creation.", 
                         "type": "string"
                     }
-                ],
+                ], 
                 "foreignKeys": [
                     {
-                        "fields": "publisher_id",
+                        "fields": "publisher_id", 
                         "reference": {
-                            "fields": "id",
+                            "fields": "id", 
                             "resource": "publisher_file"
                         }
                     }
-                ],
+                ], 
                 "primaryKey": "id"
             }
-        },
+        }, 
         {
-            "name": "run_file",
-            "path": "runs.csv",
+            "name": "run_file", 
+            "path": "runs.csv", 
             "schema": {
                 "fields": [
                     {
                         "constraints": {
-                            "required": true,
+                            "required": true, 
                             "unique": true
-                        },
-                        "name": "id",
-                        "title": "ID of the run",
+                        }, 
+                        "name": "id", 
+                        "title": "ID of the run", 
                         "type": "string"
-                    },
+                    }, 
                     {
                         "constraints": {
                             "required": true
-                        },
-                        "format": "datetime",
-                        "name": "timestamp",
-                        "title": "Timestamp of the run execution",
+                        }, 
+                        "format": "datetime", 
+                        "name": "timestamp", 
+                        "title": "Timestamp of the run execution", 
                         "type": "date"
-                    },
+                    }, 
                     {
                         "constraints": {
                             "required": true
-                        },
-                        "name": "total_score",
-                        "title": "Rounded average score of results in this run",
+                        }, 
+                        "name": "total_score", 
+                        "title": "Rounded average score of results in this run", 
                         "type": "integer"
                     }
-                ],
+                ], 
                 "primaryKey": "id"
             }
-        },
+        }, 
         {
-            "name": "result_file",
-            "path": "results.csv",
+            "name": "result_file", 
+            "path": "results.csv", 
             "schema": {
                 "fields": [
                     {
                         "constraints": {
-                            "required": true,
+                            "required": true, 
                             "unique": true
-                        },
-                        "name": "id",
-                        "title": "ID of the result",
+                        }, 
+                        "name": "id", 
+                        "title": "ID of the result", 
                         "type": "string"
-                    },
+                    }, 
                     {
                         "constraints": {
-                            "required": true,
+                            "required": true, 
                             "unique": true
-                        },
-                        "name": "source_id",
-                        "title": "ID of the correspoding source",
+                        }, 
+                        "name": "source_id", 
+                        "title": "ID of the correspoding source", 
                         "type": "string"
-                    },
+                    }, 
                     {
                         "constraints": {
                             "required": true
-                        },
-                        "name": "publisher_id",
-                        "title": "ID of the source's publisher",
+                        }, 
+                        "name": "publisher_id", 
+                        "title": "ID of the source's publisher", 
                         "type": "string"
-                    },
+                    }, 
                     {
                         "constraints": {
                             "required": true
-                        },
-                        "format": "date",
-                        "name": "created_at",
-                        "title": "Time of the source's creation.",
+                        }, 
+                        "format": "date", 
+                        "name": "created_at", 
+                        "title": "Time of the source's creation.", 
                         "type": "date"
-                    },
+                    }, 
                     {
                         "constraints": {
                             "required": true
-                        },
-                        "name": "data",
-                        "title": "Path/url to source",
+                        }, 
+                        "name": "data", 
+                        "title": "Path/url to source", 
                         "type": "string"
-                    },
+                    }, 
                     {
-                        "name": "schema",
-                        "title": "Path/url to the source's schema",
+                        "name": "schema", 
+                        "title": "Path/url to the source's schema", 
                         "type": "string"
-                    },
+                    }, 
                     {
                         "contrains": {
                             "required": true
-                        },
-                        "name": "score",
-                        "title": "Score of correctness given by GoodTables",
+                        }, 
+                        "name": "score", 
+                        "title": "Score of correctness given by GoodTables", 
                         "type": "integer"
-                    },
+                    }, 
                     {
-                        "name": "summary",
-                        "title": "Summary",
+                        "name": "summary", 
+                        "title": "Summary", 
                         "type": "string"
-                    },
+                    }, 
                     {
                         "constraints": {
-                            "required": true,
+                            "required": true, 
                             "unique": true
-                        },
-                        "name": "run_id",
-                        "title": "ID of the run in which the result was calculated",
+                        }, 
+                        "name": "run_id", 
+                        "title": "ID of the run in which the result was calculated", 
                         "type": "string"
-                    },
+                    }, 
                     {
                         "constraints": {
                             "required": true
-                        },
-                        "format": "datetime",
-                        "name": "timestamp",
-                        "title": "Timestamp of the run execution",
+                        }, 
+                        "format": "datetime", 
+                        "name": "timestamp", 
+                        "title": "Timestamp of the run execution", 
                         "type": "date"
-                    },
+                    }, 
                     {
-                        "name": "report",
-                        "title": "Path/url to the full GoodTabels report",
+                        "name": "report", 
+                        "title": "Path/url to the full GoodTabels report", 
                         "type": "string"
                     }
-                ],
+                ], 
                 "foreignKeys": [
                     {
-                        "fields": "source_id",
+                        "fields": "source_id", 
                         "reference": {
-                            "fields": "id",
+                            "fields": "id", 
                             "resource": "source_file"
                         }
-                    },
+                    }, 
                     {
-                        "fields": "publisher_id",
+                        "fields": "publisher_id", 
                         "reference": {
-                            "fields": "id",
+                            "fields": "id", 
                             "resource": "publisher_file"
                         }
-                    },
+                    }, 
                     {
-                        "fields": "run_id",
+                        "fields": "run_id", 
                         "reference": {
-                            "fields": "id",
+                            "fields": "id", 
                             "resource": "run_file"
                         }
                     }
-                ],
+                ], 
                 "primaryKey": "id"
             }
-        },
+        }, 
         {
-            "name": "performance_file",
-            "path": "performance.csv",
+            "name": "performance_file", 
+            "path": "performance.csv", 
             "schema": {
                 "fields": [
                     {
                         "constraints": {
-                            "required": true,
+                            "required": true, 
                             "unique": true
-                        },
-                        "name": "publisher_id",
-                        "title": "ID of the publisher",
+                        }, 
+                        "name": "publisher_id", 
+                        "title": "ID of the publisher", 
                         "type": "string"
-                    },
+                    }, 
                     {
                         "constraints": {
                             "required": true
-                        },
-                        "format": "date",
-                        "name": "month_of_creation",
-                        "title": "Month when the source was created",
+                        }, 
+                        "format": "date", 
+                        "name": "month_of_creation", 
+                        "title": "Month when the source was created", 
                         "type": "date"
-                    },
+                    }, 
                     {
                         "constraints": {
                             "required": true
-                        },
-                        "name": "files_count",
-                        "title": "Number of files published by the publisher during period",
+                        }, 
+                        "name": "files_count", 
+                        "title": "Number of files published by the publisher during period", 
                         "type": "integer"
-                    },
+                    }, 
                     {
                         "constraints": {
                             "required": true
-                        },
-                        "name": "score",
-                        "title": "Rounded average score of files published by the publisher during period",
+                        }, 
+                        "name": "score", 
+                        "title": "Rounded average score of files published by the publisher during period", 
                         "type": "integer"
-                    },
+                    }, 
                     {
                         "constraints": {
                             "required": true
-                        },
-                        "name": "valid",
-                        "title": "Number of valid files published by the publisher during period",
+                        }, 
+                        "name": "valid", 
+                        "title": "Number of valid files published by the publisher during period", 
                         "type": "integer"
-                    },
+                    }, 
                     {
                         "constraints": {
                             "required": true
-                        },
-                        "name": "files_count_to_date",
-                        "title": "Number of files published by the publisher up to period",
+                        }, 
+                        "name": "files_count_to_date", 
+                        "title": "Number of files published by the publisher up to period", 
                         "type": "integer"
-                    },
+                    }, 
                     {
                         "constraints": {
                             "required": true
-                        },
-                        "name": "score_to_date",
-                        "title": "Rounded average score of files published by the publisher up to period",
+                        }, 
+                        "name": "score_to_date", 
+                        "title": "Rounded average score of files published by the publisher up to period", 
                         "type": "integer"
-                    },
+                    }, 
                     {
                         "constraints": {
                             "required": true
-                        },
-                        "name": "valid_to_date",
-                        "title": "Number of valid files published by the publisher up to period",
+                        }, 
+                        "name": "valid_to_date", 
+                        "title": "Number of valid files published by the publisher up to period", 
                         "type": "integer"
                     }
-                ],
+                ], 
                 "foreignKeys": [
                     {
-                        "fields": "publisher_id",
+                        "fields": "publisher_id", 
                         "reference": {
-                            "fields": "id",
+                            "fields": "id", 
                             "resource": "publisher_file"
                         }
                     }
                 ]
             }
         }
-    ],
-    "sources": [],
+    ], 
+    "sources": [], 
     "validator_url": "https://goodtables.okfnlabs.org/api/run"
 }

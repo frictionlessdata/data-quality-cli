@@ -18,7 +18,7 @@ class TestAggregatorTask(TestTask):
         """Test that Aggregator task runs as post task and updates results"""
 
         aggregator_task = tasks.Aggregator(self.config)
-        url = 'https://raw.githubusercontent.com/okfn/tabular-validator/master/examples/valid.csv'
+        url = 'https://raw.githubusercontent.com/frictionlessdata/goodtables-py/v1.0.0-alpha8/data/valid.csv'
         pipeline_instance = pipeline.Pipeline(data=url, format='csv',
                                               post_task=aggregator_task.run)
         results_before_run = self.read_file_contents(aggregator_task.result_file)
@@ -49,7 +49,7 @@ class TestAggregatorTask(TestTask):
         """Test that Aggregator task fetches the source"""
 
         aggregator_task = tasks.Aggregator(self.config)
-        url = 'https://raw.githubusercontent.com/okfn/tabular-validator/master/examples/valid.csv'
+        url = 'https://raw.githubusercontent.com/frictionlessdata/goodtables-py/v1.0.0-alpha8/data/valid.csv'
         utilities.set_up_cache_dir(aggregator_task.cache_dir)
 
         pipeline_instance = pipeline.Pipeline(data=url, format='csv',
@@ -70,7 +70,7 @@ class TestAggregatorTask(TestTask):
         extractor = tasks.extract_relevance_period.RelevancePeriodExtractor(self.config)
         extractor.run()
         aggregator_task = tasks.Aggregator(self.config)
-        url = 'https://raw.githubusercontent.com/okfn/tabular-validator/master/examples/valid.csv'
+        url = 'https://raw.githubusercontent.com/frictionlessdata/goodtables-py/v1.0.0-alpha8/data/valid.csv'
         pipeline_instance = pipeline.Pipeline(data=url, format='csv',
                                               post_task=aggregator_task.run)
         pipeline_instance.run()
@@ -83,8 +83,8 @@ class TestAggregatorTask(TestTask):
         """Test Aggregator scoring"""
 
         aggregator_task = tasks.Aggregator(self.config)
-        url = 'https://raw.githubusercontent.com/frictionlessdata/goodtables/master/examples/empty_rows_multiple.csv'
-        schema = 'https://raw.githubusercontent.com/frictionlessdata/goodtables/master/examples/test_schema.json'
+        url = 'https://raw.githubusercontent.com/frictionlessdata/goodtables-py/v1.0.0-alpha8/data/empty_rows_multiple.csv'
+        schema = 'https://raw.githubusercontent.com/frictionlessdata/goodtables-py/v1.0.0-alpha8/data/test_schema.json'
         pipeline_options = self.config['goodtables']['arguments']['pipeline']
         pipeline_options['options']['schema']['schema'] = schema
         pipeline_instance = pipeline.Pipeline(data=url, format='csv',
