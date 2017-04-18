@@ -229,9 +229,9 @@ class RelevancePeriodExtractor(Task):
             potential_date = ' '.join(date_parts[index:])
             try:
                 date = self.date_parser.get_date_data(potential_date)
-            except ValueError:
+            except (ValueError, TypeError):
                 date = None
-            if date['date_obj'] is not None:
+            if date and date.get('date_obj') is not None:
                 break
         else:
             date = None
