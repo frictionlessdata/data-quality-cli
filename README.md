@@ -8,7 +8,7 @@ A command line tool that assesses the quality of a set of data sources (e.g.: CS
 
 ## What's it about?
 
-The `dq` (alias: `dataquality`) CLI is a tool to create and manage a [Data Package](http://specs.frictionlessdata.io/data-packages/) 
+The `dq` (alias: `dataquality`) CLI is a tool to create and manage a [Data Package](http://specs.frictionlessdata.io/data-package/) 
 from a given source of data that can be used by [Data Quality Dashboard](https://github.com/frictionlessdata/data-quality-dashboard).
 The quality assessment is done using [GoodTables](http://goodtables.readthedocs.io/en/latest/index.html) and [can be configured](#quality-config).
 
@@ -302,7 +302,7 @@ You can also exclude processors that you don't want by removing them from the li
 
 ##### Schema Processor:
 
-  Compares the content of a tabular file against a [Json Table Schema](http://specs.frictionlessdata.io/json-table-schema/).
+  Compares the content of a tabular file against a [Json Table Schema](http://specs.frictionlessdata.io/table-schema/).
   You have the following options for the schema:
 
   1. Provide a path to the schema for each source in `source_file` and [set the "schema_key"](#config) to the name 
@@ -405,11 +405,11 @@ project
 ```
 
 The `datapackage.json` file is required in order to make the project
-a valid [Data Package](http://specs.frictionlessdata.io/data-packages/). If you use
+a valid [Data Package](http://specs.frictionlessdata.io/data-package/). If you use
 the `dq init` command, it will be automatically generated for you from the 
 [the default datapackage](data_quality/datapackage.json).
 This file will be needed thoughout the app so you'll need to have it. 
-Take a look over the [Data Package](http://specs.frictionlessdata.io/data-packages/)
+Take a look over the [Data Package](http://specs.frictionlessdata.io/data-package/)
 specification if you'd like to customize the it for your project.
 
 *Warning:* The `datapackage.json` file is extensively used thoughtout Data Quality CLI and 
