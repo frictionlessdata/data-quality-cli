@@ -3,6 +3,7 @@
 
 PACKAGE := $(shell grep '^PACKAGE =' setup.py | cut -d "'" -f2)
 VERSION := $(shell head -n 1 $(PACKAGE)/VERSION)
+MAINTAINER := $(shell head -n 1 MAINTAINER.md)
 
 
 all: list
@@ -16,10 +17,22 @@ list:
 lint:
 	pylint $(PACKAGE)
 
+readme:
+	pip install md-toc
+	md_toc -p README.md github --header-levels 3
+	sed -i '/(#tableschema-spss-py)/,+2d' README.md
+
 release:
-	bash -c '[[ -z `git status -s` ]]'
-	git tag -a -m release $(VERSION)
-	git push --tags
+	git checkout master
+	git pull origin
+	git fetch -p
+	git commit -a -m 'v$(VERSION)'
+	git tag -a v$(VERSION) -m 'v$(VERSION)'
+	git push --follow-tags
+
+templates:
+	sed -i -E "s/@(\w*)/@$(MAINTAINER)/" .github/issue_template.md
+	sed -i -E "s/@(\w*)/@$(MAINTAINER)/" .github/pull_request_template.md
 
 test:
 	tox
